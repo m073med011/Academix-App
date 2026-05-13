@@ -14,7 +14,7 @@ import { ChartContainer } from "@/components/ui/chart"
 export function ActiveProjectsItemChart({
   value,
   maxRating = 100,
-  color = "hsl(var(--success))",
+  color = "var(--success)",
 }: {
   value: number
   maxRating?: number

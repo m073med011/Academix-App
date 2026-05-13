@@ -4,7 +4,7 @@ import { useEffect } from "react"
 
 import type { ReactNode } from "react"
 
-import { themes } from "@/configs/themes"
+import { generateThemeFromColor } from "@/configs/themes"
 
 import { useSettings } from "@/hooks/use-settings"
 
@@ -14,30 +14,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const bodyElement = document.body
 
-    // Update class names in the <body> tag
+    // Clean up old class names just in case
     Array.from(bodyElement.classList)
-      .filter(
-        (className) =>
-          className.startsWith("theme-") ||
-          className.startsWith("radius-") ||
-          className === "dark"
-      )
+      .filter((className) => className.startsWith("theme-") || className === "dark")
       .forEach((className) => {
         bodyElement.classList.remove(className)
       })
-
-    bodyElement.classList.add(`theme-${settings.theme}`)
-    bodyElement.classList.add(`theme-${settings.theme}`)
-    // Remove class-based radius to allow dynamic style-based radius
-    // bodyElement.classList.add(`radius-${settings.radius ?? 0.5}`)
-
-    // Apply dynamic radius
-    // If radius is 1.0, use "9999px" for full pill shape
-    // Otherwise use rem value
-    const radiusValue =
-      settings.radius === 1.0 ? "1.6rem" : `${settings.radius ?? 0.5}rem`
-
-    bodyElement.style.setProperty("--radius", radiusValue)
 
     // Add dark class based on mode setting
     const isDark =
@@ -49,23 +31,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       bodyElement.classList.add("dark")
     }
 
-    // Dynamic Lightness Logic
-    if (settings.lightness !== 0) {
-      const mode = isDark ? "dark" : "light"
-      // @ts-ignore
-      const baseColor = themes[settings.theme].activeColor[mode] as string
+    // Apply dynamic radius
+    const radiusValue =
+      settings.radius === 1.0 ? "1.6rem" : `${settings.radius ?? 0.5}rem`
+    bodyElement.style.setProperty("--radius", radiusValue)
 
-      const [h, s, l] = baseColor.split(" ").map((v) => v.replace("%", ""))
-      const newL = Math.max(
-        0,
-        Math.min(100, parseFloat(l) + settings.lightness)
-      )
+    // Generate theme from the user's primary color
+    const generated = generateThemeFromColor(settings.primaryColor)
+    const mode = isDark ? "dark" : "light"
+    const colors = generated[mode]
 
-      bodyElement.style.setProperty("--primary", `${h} ${s}% ${newL}%`)
-    } else {
-      bodyElement.style.removeProperty("--primary")
-    }
-  }, [settings.theme, settings.radius, settings.mode, settings.lightness])
+    Object.entries(colors).forEach(([key, value]) => {
+      // Skip radius as it's handled separately
+      if (key === "radius") return
+
+      // Convert camelCase to kebab-case
+      const cssVar = `--${key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, "$1-$2").toLowerCase()}`
+      bodyElement.style.setProperty(cssVar, value)
+    })
+  }, [settings.primaryColor, settings.radius, settings.mode])
 
   return <>{children}</>
 }

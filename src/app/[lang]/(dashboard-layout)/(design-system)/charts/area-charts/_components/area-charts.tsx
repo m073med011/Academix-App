@@ -36,8 +36,8 @@ export function AreaCharts() {
               <Area
                 type="monotone"
                 dataKey="uv"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
             </AreaChart>
           </ChartContainer>
@@ -58,22 +58,22 @@ export function AreaCharts() {
                 type="monotone"
                 dataKey="uv"
                 stackId="1"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
               <Area
                 type="monotone"
                 dataKey="pv"
                 stackId="1"
-                stroke="hsl(var(--chart-2))"
-                fill="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
               />
               <Area
                 type="monotone"
                 dataKey="amt"
                 stackId="1"
-                stroke="hsl(var(--chart-3))"
-                fill="hsl(var(--chart-3))"
+                stroke="var(--chart-3)"
+                fill="var(--chart-3)"
               />
             </AreaChart>
           </ChartContainer>
@@ -89,8 +89,8 @@ export function AreaCharts() {
               <Area
                 type="monotone"
                 dataKey="uv"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
             </AreaChart>
           </ChartContainer>
@@ -111,22 +111,22 @@ export function AreaCharts() {
                 type="monotone"
                 dataKey="uv"
                 stackId="1"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
               <Area
                 type="monotone"
                 dataKey="pv"
                 stackId="1"
-                stroke="hsl(var(--chart-2))"
-                fill="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
               />
               <Area
                 type="monotone"
                 dataKey="amt"
                 stackId="1"
-                stroke="hsl(var(--chart-3))"
-                fill="hsl(var(--chart-3))"
+                stroke="var(--chart-3)"
+                fill="var(--chart-3)"
               />
             </AreaChart>
           </ChartContainer>
@@ -146,8 +146,8 @@ export function AreaCharts() {
               <Area
                 type="natural"
                 dataKey="uv"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
             </AreaChart>
           </ChartContainer>
@@ -168,22 +168,22 @@ export function AreaCharts() {
                 <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
-                    stopColor="hsl(var(--chart-1))"
+                    stopColor="var(--chart-1)"
                     stopOpacity={1}
                   />
                   <stop
                     offset="50%"
-                    stopColor="hsl(var(--chart-1))"
+                    stopColor="var(--chart-1)"
                     stopOpacity={1}
                   />
                   <stop
                     offset="50%"
-                    stopColor="hsl(var(--chart-2))"
+                    stopColor="var(--chart-2)"
                     stopOpacity={1}
                   />
                   <stop
                     offset="100%"
-                    stopColor="hsl(var(--chart-2))"
+                    stopColor="var(--chart-2)"
                     stopOpacity={1}
                   />
                 </linearGradient>
@@ -217,8 +217,8 @@ export function AreaCharts() {
               <Area
                 type="monotone"
                 dataKey="uv"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
                 connectNulls={true}
               />
             </AreaChart>
@@ -239,8 +239,8 @@ export function AreaCharts() {
               <Area
                 type="monotone"
                 dataKey="uv"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
               />
             </AreaChart>
           </ChartContainer>
@@ -253,8 +253,8 @@ export function AreaCharts() {
               <Area
                 type="monotone"
                 dataKey="pv"
-                stroke="hsl(var(--chart-2))"
-                fill="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
               />
             </AreaChart>
           </ChartContainer>

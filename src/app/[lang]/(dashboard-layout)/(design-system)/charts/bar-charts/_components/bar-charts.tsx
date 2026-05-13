@@ -38,7 +38,7 @@ export function BarCharts() {
         <CardContent>
           <ChartContainer config={{}} className="w-full">
             <BarChart data={barChartsData}>
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -54,7 +54,7 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -70,8 +70,8 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" stackId="a" fill="hsl(var(--chart-1))" />
-              <Bar dataKey="pv" stackId="a" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="uv" stackId="a" fill="var(--chart-1)" />
+              <Bar dataKey="pv" stackId="a" fill="var(--chart-2)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -87,9 +87,9 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
-              <Bar dataKey="pv" fill="hsl(var(--chart-2))" />
-              <Bar dataKey="amt" fill="hsl(var(--chart-3))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
+              <Bar dataKey="pv" fill="var(--chart-2)" />
+              <Bar dataKey="amt" fill="var(--chart-3)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -105,7 +105,7 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -122,8 +122,8 @@ export function BarCharts() {
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine y={0} stroke="#000" />
-              <Bar dataKey="pv" fill="hsl(var(--chart-1))" />
-              <Bar dataKey="uv" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="pv" fill="var(--chart-1)" />
+              <Bar dataKey="uv" fill="var(--chart-2)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -139,8 +139,8 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
-              <Brush dataKey="name" height={30} stroke="hsl(var(--chart-2))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
+              <Brush dataKey="name" height={30} stroke="var(--chart-2)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -156,7 +156,7 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" />
+              <Bar dataKey="uv" fill="var(--chart-1)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -172,8 +172,8 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))" minPointSize={2} />
-              <Bar dataKey="pv" fill="hsl(var(--chart-2))" minPointSize={3} />
+              <Bar dataKey="uv" fill="var(--chart-1)" minPointSize={2} />
+              <Bar dataKey="pv" fill="var(--chart-2)" minPointSize={3} />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -190,8 +190,8 @@ export function BarCharts() {
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ReferenceLine y={0} stroke="#000" />
-              <Bar dataKey="pv" fill="hsl(var(--chart-1))" stackId="stack" />
-              <Bar dataKey="uv" fill="hsl(var(--chart-2))" stackId="stack" />
+              <Bar dataKey="pv" fill="var(--chart-1)" stackId="stack" />
+              <Bar dataKey="uv" fill="var(--chart-2)" stackId="stack" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -208,16 +208,16 @@ export function BarCharts() {
               <YAxis
                 yAxisId="left"
                 orientation="left"
-                stroke="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                stroke="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar yAxisId="left" dataKey="pv" fill="hsl(var(--chart-1))" />
-              <Bar yAxisId="right" dataKey="uv" fill="hsl(var(--chart-2))" />
+              <Bar yAxisId="left" dataKey="pv" fill="var(--chart-1)" />
+              <Bar yAxisId="right" dataKey="uv" fill="var(--chart-2)" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -233,9 +233,9 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="uv" fill="hsl(var(--chart-1))">
+              <Bar dataKey="uv" fill="var(--chart-1)">
                 {barChartsData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill="hsl(var(--chart-1))" />
+                  <Cell key={`cell-${index}`} fill="var(--chart-1)" />
                 ))}
               </Bar>
             </BarChart>
@@ -254,8 +254,8 @@ export function BarCharts() {
               <XAxis dataKey="name" xAxisId="1" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="pv" fill="hsl(var(--chart-1))" xAxisId="0" />
-              <Bar dataKey="uv" fill="hsl(var(--chart-2))" xAxisId="1" />
+              <Bar dataKey="pv" fill="var(--chart-1)" xAxisId="0" />
+              <Bar dataKey="uv" fill="var(--chart-2)" xAxisId="1" />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -271,8 +271,8 @@ export function BarCharts() {
               <XAxis dataKey="name" />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="pv" fill="hsl(var(--chart-1))" />
-              <Bar dataKey="uv" fill="hsl(var(--chart-2))" />
+              <Bar dataKey="pv" fill="var(--chart-1)" />
+              <Bar dataKey="uv" fill="var(--chart-2)" />
             </BarChart>
           </ChartContainer>
         </CardContent>

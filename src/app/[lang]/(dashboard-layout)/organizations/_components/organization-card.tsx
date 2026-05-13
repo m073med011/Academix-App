@@ -43,9 +43,19 @@ export function OrganizationCard({
   membership,
   dictionary,
 }: OrganizationCardProps) {
+  // Guard: organizationId and roleId must be populated objects (not null or string IDs)
+  if (
+    !membership.organizationId ||
+    typeof membership.organizationId === "string" ||
+    !membership.roleId ||
+    typeof membership.roleId === "string"
+  ) {
+    return null
+  }
+
   const org = membership.organizationId as Organization
   const role = membership.roleId as OrganizationRole
-  const owner = org.owner as User
+  const owner = typeof org.owner === "string" ? null : (org.owner as User)
 
   return (
     <Card className="flex flex-col overflow-hidden transition-all hover:shadow-md">
@@ -99,14 +109,14 @@ export function OrganizationCard({
 
         <div className="space-y-2">
           {/* Owner Information */}
-          {owner && (
+          {owner && typeof owner === "object" && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="font-medium">{dictionary.owner}:</span>
               <div className="flex items-center gap-1.5">
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={owner.imageProfileUrl} alt={owner.name} />
                   <AvatarFallback className="text-[10px]">
-                    {owner.name.charAt(0).toUpperCase()}
+                    {owner.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <span className="font-medium text-foreground truncate max-w-[120px]">

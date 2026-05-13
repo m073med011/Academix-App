@@ -67,7 +67,7 @@ export function BounceRateChart({
         <Line
           dataKey="value"
           type="linear"
-          stroke="hsl(var(--chart-3))"
+          stroke="var(--chart-3)"
           strokeWidth={2}
           dot={false}
         />

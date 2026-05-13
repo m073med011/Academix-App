@@ -44,7 +44,7 @@ export function PerformanceOverTimeChart({
           dataKey="visitors"
           yAxisId="left"
           type="linear"
-          stroke="hsl(var(--chart-1))"
+          stroke="var(--chart-1)"
           strokeWidth={2}
           dot={false}
         />
@@ -52,7 +52,7 @@ export function PerformanceOverTimeChart({
           dataKey="conversions"
           yAxisId="right"
           type="linear"
-          stroke="hsl(var(--chart-2))"
+          stroke="var(--chart-2)"
           strokeWidth={2}
           dot={false}
         />

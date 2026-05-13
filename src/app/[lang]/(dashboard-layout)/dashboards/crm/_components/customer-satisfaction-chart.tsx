@@ -43,7 +43,7 @@ export function CustomerSatisfactionChart({
           background
           dataKey="value"
           cornerRadius={radius}
-          fill="hsl(var(--primary))"
+          fill="var(--primary)"
         />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label

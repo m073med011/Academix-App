@@ -47,7 +47,7 @@ export function ScatterCharts() {
               <Scatter
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               />
             </ScatterChart>
           </ChartContainer>
@@ -77,7 +77,7 @@ export function ScatterCharts() {
               <Scatter
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               />
             </ScatterChart>
           </ChartContainer>
@@ -100,7 +100,7 @@ export function ScatterCharts() {
               <Scatter
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 line
                 shape="cross"
               />
@@ -132,7 +132,7 @@ export function ScatterCharts() {
               <Scatter
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 shape="circle"
               />
             </ScatterChart>
@@ -156,7 +156,7 @@ export function ScatterCharts() {
               <Scatter
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               >
                 <LabelList dataKey="x" />
               </Scatter>
@@ -179,7 +179,7 @@ export function ScatterCharts() {
                 dataKey="y"
                 name="weight"
                 unit="kg"
-                stroke="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
               />
               <YAxis
                 yAxisId="right"
@@ -188,7 +188,7 @@ export function ScatterCharts() {
                 name="weight"
                 unit="kg"
                 orientation="right"
-                stroke="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
               />
               <ChartTooltip
                 cursor={{ strokeDasharray: "3 3" }}
@@ -198,13 +198,13 @@ export function ScatterCharts() {
                 yAxisId="left"
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               />
               <Scatter
                 yAxisId="right"
                 name="A school"
                 data={scatterChartsData}
-                fill="hsl(var(--chart-2))"
+                fill="var(--chart-2)"
               />
             </ScatterChart>
           </ChartContainer>
@@ -228,7 +228,7 @@ export function ScatterCharts() {
                 {scatterChartsData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={`hsl(var(--chart-${(index % 5) + 1}))`}
+                    fill={`var(--chart-${(index % 5) + 1})`}
                   />
                 ))}
               </Scatter>

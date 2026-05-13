@@ -32,7 +32,7 @@ export function TreemapCharts() {
               dataKey="size"
               aspectRatio={4 / 3}
               stroke="#fff"
-              fill="hsl(var(--chart-1))"
+              fill="var(--chart-1)"
             >
               <ChartTooltip content={<ChartTooltipContent />} />
             </Treemap>

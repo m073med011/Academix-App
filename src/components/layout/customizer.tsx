@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
 import { useCartStore } from "@/stores/cart-store"
 import {
@@ -8,7 +8,9 @@ import {
   AlignRight,
   AlignStartHorizontal,
   AlignStartVertical,
+  Check,
   MoonStar,
+  Palette,
   PanelLeftClose,
   PanelLeftOpen,
   RotateCcw,
@@ -17,16 +19,12 @@ import {
   SunMoon,
 } from "lucide-react"
 
-import type { LocaleType, ModeType, ThemeType } from "@/types"
-import type { CSSProperties } from "react"
+import type { LocaleType, ModeType } from "@/types"
 
 import { i18n } from "@/configs/i18n"
-import { themes } from "@/configs/themes"
 import { relocalizePathname } from "@/lib/i18n"
-import { adjustLightness } from "@/lib/utils"
 
 import { useSettings } from "@/hooks/use-settings"
-import { useThemeScrubber } from "@/hooks/use-theme-scrubber"
 import { Button } from "@/components/ui/button"
 import { NumericScrubber } from "@/components/ui/number-scrubber"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -41,17 +39,87 @@ import {
 } from "@/components/ui/sheet"
 import { useSidebar } from "@/components/ui/sidebar"
 
+const APPLY_DELAY = 5 // seconds
+
 export function Customizer() {
   const { settings, updateSettings, resetSettings } = useSettings()
   const { setOpen } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
   const params = useParams()
-  const { handlePointerDown, handleKeyDown } = useThemeScrubber()
   const dictionary = useCartStore((state) => state.dictionary)
 
   const locale = params.lang as LocaleType
   const direction = i18n.localeDirection[locale]
+
+  // ─── Debounced color state ───────────────────────────────────────────
+  const [previewColor, setPreviewColor] = useState<string | null>(null)
+  const [countdown, setCountdown] = useState(0)
+  const [isEditingHex, setIsEditingHex] = useState(false)
+  const [hexInput, setHexInput] = useState("")
+  const applyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // The color to display in the UI (preview takes priority)
+  const displayColor = previewColor ?? settings.primaryColor ?? "#2563eb"
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+    }
+  }, [])
+
+  const startColorCountdown = useCallback(
+    (color: string) => {
+      // Set preview state (only updates the swatch, NOT the theme)
+      setPreviewColor(color)
+      setCountdown(APPLY_DELAY)
+
+      // Clear existing timers
+      if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+
+      // Tick the countdown every second
+      tickIntervalRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      // After APPLY_DELAY seconds, persist to settings
+      applyTimerRef.current = setTimeout(() => {
+        updateSettings({ ...settings, primaryColor: color })
+        setPreviewColor(null)
+        setCountdown(0)
+        if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+      }, APPLY_DELAY * 1000)
+    },
+    [settings, updateSettings]
+  )
+
+  // Immediately apply + cancel countdown
+  const applyNow = useCallback(() => {
+    if (!previewColor) return
+    if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+    updateSettings({ ...settings, primaryColor: previewColor })
+    setPreviewColor(null)
+    setCountdown(0)
+  }, [previewColor, settings, updateSettings])
+
+  // Cancel preview — just clear the pending color
+  const cancelPreview = useCallback(() => {
+    if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+    setPreviewColor(null)
+    setCountdown(0)
+  }, [])
 
   const handleSetLocale = useCallback(
     (localeName: LocaleType) => {
@@ -69,6 +137,11 @@ export function Customizer() {
   )
 
   const handleReset = useCallback(() => {
+    // Clear any pending color preview
+    if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+    if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+    setPreviewColor(null)
+    setCountdown(0)
     resetSettings()
     router.push(relocalizePathname(pathname, "en"), { scroll: false })
   }, [resetSettings, router, pathname])
@@ -98,85 +171,135 @@ export function Customizer() {
                 </SheetDescription>
               </SheetHeader>
 
+              {/* Color Picker */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-0.5">
-                  <p className="text-sm">
-                    {dictionary?.customizer?.color || "Color"}
-                  </p>
-                  {settings.lightness !== 0 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 px-2 text-xs font-mono tabular-nums transition-colors hover:bg-primary hover:text-primary-foreground"
-                      style={
-                        {
-                          "--primary":
-                            // @ts-ignore
-                            themes[settings.theme].activeColor[
-                              settings.mode === "dark" ? "dark" : "light"
-                            ],
-                        } as CSSProperties
-                      }
-                      onClick={() =>
-                        updateSettings({ ...settings, lightness: 0 })
-                      }
-                    >
-                      {dictionary?.customizer?.reset || "Reset"} (
-                      {settings.lightness > 0 ? "+" : ""}
-                      {settings.lightness}%)
-                    </Button>
+                <p className="text-sm px-0.5">
+                  {dictionary?.customizer?.color || "Color"}
+                </p>
+                <div className="flex items-center gap-3">
+                  <label
+                    className="group relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-border shadow-sm transition-all hover:scale-110 hover:shadow-md"
+                    style={{ backgroundColor: displayColor }}
+                  >
+                    <Palette
+                      className="h-4 w-4 opacity-60 transition-opacity group-hover:opacity-100"
+                      style={{ color: getContrastColor(displayColor) }}
+                    />
+                    <input
+                      type="color"
+                      value={displayColor}
+                      onChange={(e) => startColorCountdown(e.target.value)}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      aria-label="Pick a primary color"
+                    />
+                  </label>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">
+                      {dictionary?.customizer?.color || "Primary Color"}
+                    </span>
+                    {isEditingHex ? (
+                      <input
+                        autoFocus
+                        type="text"
+                        value={hexInput}
+                        onChange={(e) => setHexInput(e.target.value)}
+                        onBlur={() => {
+                          const val = hexInput.trim()
+                          const hex = val.startsWith("#") ? val : `#${val}`
+                          if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+                            updateSettings({ ...settings, primaryColor: hex.toLowerCase() })
+                          }
+                          setIsEditingHex(false)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            (e.target as HTMLInputElement).blur()
+                          } else if (e.key === "Escape") {
+                            setIsEditingHex(false)
+                          }
+                        }}
+                        className="w-20 rounded border border-input bg-transparent px-1.5 py-0.5 text-xs font-mono uppercase text-foreground outline-none focus:ring-1 focus:ring-ring"
+                        placeholder="#000000"
+                        maxLength={7}
+                      />
+                    ) : (
+                      <span
+                        className="text-xs font-mono text-muted-foreground uppercase cursor-pointer hover:text-foreground transition-colors border-b border-dashed border-transparent hover:border-muted-foreground"
+                        onClick={() => {
+                          setHexInput(displayColor)
+                          setIsEditingHex(true)
+                        }}
+                        title="Click to edit hex code"
+                      >
+                        {displayColor}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Countdown badge */}
+                  {countdown > 0 && (
+                    <div className="ms-auto flex items-center gap-1.5">
+                      <button
+                        onClick={applyNow}
+                        className="flex h-7 items-center gap-1 rounded-full bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground shadow-sm transition-all hover:scale-105 hover:shadow-md"
+                        title="Apply now"
+                      >
+                        <Check className="h-3 w-3" />
+                        <span className="font-mono tabular-nums">
+                          {countdown}s
+                        </span>
+                      </button>
+                      <button
+                        onClick={cancelPreview}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground shadow-sm transition-all hover:bg-destructive hover:text-destructive-foreground hover:scale-105"
+                        title="Cancel"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(themes).map(([name, value]) => {
-                    const isActive = settings.theme === name
-                    const mode = settings.mode === "dark" ? "dark" : "light"
-                    // @ts-ignore
-                    const baseColor = value.activeColor[mode]
 
-                    return (
-                      <Button
-                        key={name}
-                        variant={isActive ? "secondary" : "default"}
-                        className={`relative overflow-hidden ${
-                          isActive ? "cursor-ew-resize" : "cursor-pointer"
-                        }`}
-                        style={
-                          {
-                            "--primary": adjustLightness(
-                              baseColor,
-                              settings.lightness ?? 0
-                            ),
-                            "--primary-foreground":
-                              value.activeColor["foreground"],
-                          } as CSSProperties
-                        }
-                        onPointerDown={(e) =>
-                          handlePointerDown(e, name as ThemeType)
-                        }
-                        onKeyDown={(e) => handleKeyDown(e, name as ThemeType)}
-                      >
-                        {isActive && (
-                          <div
-                            className="absolute inset-0 transition-all bg-primary"
-                            style={{
-                              width: `${((settings.lightness + 40) / 80) * 100}%`,
-                            }}
-                          />
-                        )}
-
-                        <div className="relative z-10 flex w-full items-center justify-between px-1">
-                          <span>{value.label}</span>
-                          {isActive && (
-                            <span className="text-[10px] font-mono tabular-nums opacity-80">
-                              {settings.lightness > 0 ? "+" : ""}
-                              {settings.lightness}%
-                            </span>
-                          )}
-                        </div>
-                      </Button>
-                    )
-                  })}
+                {/* Quick color presets */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {[
+                    "#2563eb", // blue
+                    "#7c3aed", // violet
+                    "#16a34a", // green
+                    "#dc2626", // red
+                    "#e11d48", // rose
+                    "#f97316", // orange
+                    "#facc15", // yellow
+                    "#06b6d4", // cyan
+                    "#ec4899", // pink
+                    "#18181b", // zinc
+                  ].map((color) => (
+                    <button
+                      key={color}
+                      className="group relative h-7 w-7 rounded-full border border-border shadow-sm transition-all hover:scale-125 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      style={{ backgroundColor: color }}
+                      onClick={() => {
+                        // Cancel any pending countdown
+                        if (applyTimerRef.current) clearTimeout(applyTimerRef.current)
+                        if (tickIntervalRef.current) clearInterval(tickIntervalRef.current)
+                        setPreviewColor(null)
+                        setCountdown(0)
+                        // Apply immediately
+                        updateSettings({ ...settings, primaryColor: color })
+                      }}
+                      aria-label={`Set color to ${color}`}
+                    >
+                      {displayColor.toLowerCase() ===
+                        color.toLowerCase() && (
+                        <span
+                          className="absolute inset-0 flex items-center justify-center text-xs font-bold"
+                          style={{ color: getContrastColor(color) }}
+                        >
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -191,15 +314,6 @@ export function Customizer() {
                       variant="outline"
                       size="sm"
                       className="h-7 px-2 text-xs font-mono tabular-nums transition-colors hover:bg-primary hover:text-primary-foreground"
-                      style={
-                        {
-                          "--primary":
-                            // @ts-ignore
-                            themes[settings.theme].activeColor[
-                              settings.mode === "dark" ? "dark" : "light"
-                            ],
-                        } as CSSProperties
-                      }
                       onClick={() =>
                         updateSettings({ ...settings, radius: 0.75 })
                       }
@@ -390,4 +504,23 @@ export function Customizer() {
       </SheetPortal>
     </Sheet>
   )
+}
+
+/** Helper: returns white or black depending on which has better contrast */
+function getContrastColor(hex: string): string {
+  if (!hex || typeof hex !== "string" || !hex.startsWith("#")) return "#ffffff"
+  let r = 0,
+    g = 0,
+    b = 0
+  if (hex.length === 4) {
+    r = parseInt("0x" + hex[1] + hex[1])
+    g = parseInt("0x" + hex[2] + hex[2])
+    b = parseInt("0x" + hex[3] + hex[3])
+  } else if (hex.length === 7) {
+    r = parseInt("0x" + hex[1] + hex[2])
+    g = parseInt("0x" + hex[3] + hex[4])
+    b = parseInt("0x" + hex[5] + hex[6])
+  }
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.5 ? "#18181b" : "#ffffff"
 }

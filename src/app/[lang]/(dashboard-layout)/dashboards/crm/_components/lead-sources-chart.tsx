@@ -15,23 +15,23 @@ import {
 const chartConfig = {
   socialMedia: {
     label: "Social Media",
-    color: "hsl(var(--chart-1))",
+    color: "var(--chart-1)",
   },
   emailCampaigns: {
     label: "Email Campaigns",
-    color: "hsl(var(--chart-2))",
+    color: "var(--chart-2)",
   },
   referrals: {
     label: "Referrals",
-    color: "hsl(var(--chart-3))",
+    color: "var(--chart-3)",
   },
   website: {
     label: "Website",
-    color: "hsl(var(--chart-4))",
+    color: "var(--chart-4)",
   },
   other: {
     label: "Other",
-    color: "hsl(var(--chart-5))",
+    color: "var(--chart-5)",
   },
 } satisfies ChartConfig
 

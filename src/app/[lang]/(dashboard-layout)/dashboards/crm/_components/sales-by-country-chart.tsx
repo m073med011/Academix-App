@@ -89,7 +89,7 @@ export function SalesByCountryChart({
         <Line
           dataKey="sales"
           type="natural"
-          stroke="hsl(var(--border))"
+          stroke="var(--border)"
           strokeWidth={2}
           activeDot={false}
           // @ts-ignore

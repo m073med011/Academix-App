@@ -43,11 +43,11 @@ export function ComposedCharts() {
               <Area
                 type="monotone"
                 dataKey="amt"
-                fill="hsl(var(--chart-1))"
-                stroke="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
+                stroke="var(--chart-1)"
               />
-              <Bar dataKey="pv" barSize={20} fill="hsl(var(--chart-2))" />
-              <Line type="monotone" dataKey="uv" stroke="hsl(var(--chart-3))" />
+              <Bar dataKey="pv" barSize={20} fill="var(--chart-2)" />
+              <Line type="monotone" dataKey="uv" stroke="var(--chart-3)" />
             </ComposedChart>
           </ChartContainer>
         </CardContent>
@@ -66,14 +66,14 @@ export function ComposedCharts() {
               <Area
                 type="monotone"
                 dataKey="amt"
-                fill="hsl(var(--chart-1))"
-                stroke="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
+                stroke="var(--chart-1)"
               />
-              <Bar dataKey="amt" barSize={20} fill="hsl(var(--chart-2))" />
+              <Bar dataKey="amt" barSize={20} fill="var(--chart-2)" />
               <Line
                 type="monotone"
                 dataKey="amt"
-                stroke="hsl(var(--chart-3))"
+                stroke="var(--chart-3)"
               />
             </ComposedChart>
           </ChartContainer>
@@ -92,11 +92,11 @@ export function ComposedCharts() {
               <ChartTooltip content={<ChartTooltipContent />} />
               <Area
                 dataKey="amt"
-                fill="hsl(var(--chart-1))"
-                stroke="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
+                stroke="var(--chart-1)"
               />
-              <Bar dataKey="pv" barSize={20} fill="hsl(var(--chart-2))" />
-              <Line dataKey="uv" stroke="hsl(var(--chart-3))" />
+              <Bar dataKey="pv" barSize={20} fill="var(--chart-2)" />
+              <Line dataKey="uv" stroke="var(--chart-3)" />
             </ComposedChart>
           </ChartContainer>
         </CardContent>
@@ -128,11 +128,11 @@ export function ComposedCharts() {
               <Area
                 type="monotone"
                 dataKey="amt"
-                fill="hsl(var(--chart-1))"
-                stroke="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
+                stroke="var(--chart-1)"
               />
-              <Bar dataKey="pv" barSize={20} fill="hsl(var(--chart-2))" />
-              <Line type="monotone" dataKey="uv" stroke="hsl(var(--chart-3))" />
+              <Bar dataKey="pv" barSize={20} fill="var(--chart-2)" />
+              <Line type="monotone" dataKey="uv" stroke="var(--chart-3)" />
             </ComposedChart>
           </ChartContainer>
         </CardContent>

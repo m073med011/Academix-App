@@ -46,8 +46,8 @@ export function RadarCharts() {
               <Radar
                 name="Mike"
                 dataKey="A"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
                 fillOpacity={0.6}
               />
               <ChartTooltip content={<ChartTooltipContent />} />
@@ -73,15 +73,15 @@ export function RadarCharts() {
               <Radar
                 name="Mike"
                 dataKey="A"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
                 fillOpacity={0.6}
               />
               <Radar
                 name="Lily"
                 dataKey="B"
-                stroke="hsl(var(--chart-2))"
-                fill="hsl(var(--chart-2))"
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
                 fillOpacity={0.6}
               />
               <ChartLegend />

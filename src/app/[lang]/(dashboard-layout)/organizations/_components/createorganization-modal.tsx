@@ -163,7 +163,6 @@ export function CreateOrganizationModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="sm:max-w-[600px]"
         onInteractOutside={(e) => {
           // If processing, prevent interaction outside
           if (isImageProcessing) {
@@ -176,7 +175,7 @@ export function CreateOrganizationModal({
           }
         }}
       >
-        <DialogHeader className="px-4">
+        <DialogHeader >
           <DialogTitle>{createModal.title}</DialogTitle>
           <DialogDescription>{createModal.description}</DialogDescription>
         </DialogHeader>
@@ -184,10 +183,9 @@ export function CreateOrganizationModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col max-h-[70vh]"
-          >
+             >
             {/* Scrollable Content Area */}
-            <ScrollArea className="px-4">
+            <ScrollArea>
               <div className="space-y-6">
                 {/* Organization Name */}
                 <FormField

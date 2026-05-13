@@ -35,7 +35,7 @@ export function PieCharts() {
                 cx="50%"
                 cy="50%"
                 outerRadius={50}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               />
               <Pie
                 data={pieChartsData}
@@ -45,7 +45,7 @@ export function PieCharts() {
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
-                fill="hsl(var(--chart-2))"
+                fill="var(--chart-2)"
                 label
               />
               <ChartTooltip content={<ChartTooltipContent />} />
@@ -70,7 +70,7 @@ export function PieCharts() {
                 endAngle={0}
                 innerRadius={60}
                 outerRadius={80}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 label
               />
               <ChartTooltip content={<ChartTooltipContent />} />
@@ -92,7 +92,7 @@ export function PieCharts() {
                 cx="50%"
                 cy="50%"
                 outerRadius={50}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
               />
               <Pie
                 data={pieChartsData}
@@ -102,7 +102,7 @@ export function PieCharts() {
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
-                fill="hsl(var(--chart-2))"
+                fill="var(--chart-2)"
                 label
               />
               <ChartTooltip content={<ChartTooltipContent />} />
@@ -123,13 +123,13 @@ export function PieCharts() {
                 cy="50%"
                 labelLine={false}
                 outerRadius={80}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 dataKey="value"
               >
                 {pieChartsData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={`hsl(var(--chart-${(index % 5) + 1}))`}
+                    fill={`var(--chart-${(index % 5) + 1})`}
                   />
                 ))}
               </Pie>
@@ -151,14 +151,14 @@ export function PieCharts() {
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 paddingAngle={5}
                 dataKey="value"
               >
                 {pieChartsData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={`hsl(var(--chart-${(index % 5) + 1}))`}
+                    fill={`var(--chart-${(index % 5) + 1})`}
                   />
                 ))}
               </Pie>
@@ -185,13 +185,13 @@ export function PieCharts() {
                 endAngle={0}
                 innerRadius={60}
                 outerRadius={80}
-                fill="hsl(var(--chart-1))"
+                fill="var(--chart-1)"
                 dataKey="value"
               >
                 {pieChartsData.map((_, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={`hsl(var(--chart-${(index % 2) + 1}))`}
+                    fill={`var(--chart-${(index % 2) + 1})`}
                   />
                 ))}
               </Pie>
