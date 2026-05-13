@@ -3,10 +3,6 @@ import type { LocaleType } from "@/types"
 import { getDictionary } from "@/lib/get-dictionary"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import {
-  FloatingIconsHero,
-  defaultHeroIcons,
-} from "@/components/ui/floating-icons-hero-section"
 import { ShaderBackgroundWrapper } from "@/components/ui/shader-background-wrapper"
 import { LandingFooter } from "@/components/layout/landing-footer"
 import { LandingHeader } from "@/components/layout/landing-header"
@@ -14,95 +10,9 @@ import { LandingHeader } from "@/components/layout/landing-header"
 // New imports
 import IntroAnimation from "@/components/ui/scroll-morph-hero"
 import RadialOrbitalTimeline from "@/components/ui/radial-orbital-timeline"
-import "../landing-animations.css"
+import { rolesData } from "@/data/rolesData"
 
-const rolesData = [
-  {
-    id: 1,
-    title: "Student",
-    date: "Learning",
-    content: "Embark on a personalized learning journey. Access world-class courses, track your growth with advanced analytics, and earn verified credentials that open doors.",
-    category: "Learner",
-    icon: "graduationCap",
-    relatedIds: [2, 4], // Instructor, Freelancer
-    status: "in-progress" as const,
-    energy: 100,
-    features: [
-      "Curated AI Learning Paths",
-      "Interactive Quizzes & Assignments",
-      "Real-time Progress Tracking",
-      "Blockchain-Verified Certificates"
-    ]
-  },
-  {
-    id: 2,
-    title: "Instructor",
-    date: "Teaching",
-    content: "Transform your expertise into income. Build engaging courses, mentor students globally, and leverage powerful tools to manage your education business.",
-    category: "Educator",
-    icon: "users",
-    relatedIds: [1, 5], // Student, Organizer
-    status: "completed" as const,
-    energy: 90,
-    features: [
-      "Advanced Course Creation Studio",
-      "Detailed Student Analytics",
-      "Automated Revenue Payouts",
-      "Live Session Management"
-    ]
-  },
-  {
-    id: 3,
-    title: "Admin",
-    date: "System",
-    content: "Maintain total control over your platform. Orchestrate user roles, oversee financial flows, and ensure system integrity with enterprise-grade tools.",
-    category: "Operations",
-    icon: "shield",
-    relatedIds: [1, 2, 4, 5],
-    status: "in-progress" as const,
-    energy: 60,
-    features: [
-      "System-wide Analytics Dashboard",
-      "User & Content Management",
-      "Financial Oversight & Refunds",
-      "Security & Audit Logs"
-    ]
-  },
-  {
-    id: 4,
-    title: "Freelancer",
-    date: "Working",
-    content: "Monetize your skills on your own terms. Connect with clients, showcase your portfolio, and deliver projects via a seamless, secure workspace.",
-    category: "Professional",
-    icon: "briefcase",
-    relatedIds: [1, 5],
-    status: "pending" as const,
-    energy: 85,
-    features: [
-      "Global Talent Marketplace",
-      "Self-Branding Profile Tools",
-      "Direct Client Messaging",
-      "Secure Project Milestones"
-    ]
-  },
-  {
-    id: 5,
-    title: "Organizer",
-    date: "Events",
-    content: "Empower your organization. Manage teams, assign private training, and track skill development across your entire workforce.",
-    category: "Community",
-    icon: "layout",
-    relatedIds: [1, 2, 4],
-    status: "completed" as const,
-    energy: 75,
-    features: [
-      "Multi-level Team Management",
-      "Private Course Library",
-      "Role-Based Access Control",
-      "Enterprise Performance Reports"
-    ]
-  },
-];
+
 
 export default async function LandingPage(props: {
   params: Promise<{ lang: string }>
@@ -120,19 +30,35 @@ export default async function LandingPage(props: {
         <LandingHeader dictionary={dictionary} />
 
         <main className="flex-1 w-full">
-          {/* Hero Section - FloatingIconsHero - Full Width */}
-          <FloatingIconsHero
-  title="Build Skills That Actually Matter"
-  subtitle="A modern learning platform for students, professionals, and organizations to acquire real-world skills, collaborate, and grow through structured, outcome-driven education."
-  ctaText="Start Learning Now"
-  ctaHref={ensureLocalizedPathname("/auth/register", params.lang)}
-  icons={defaultHeroIcons}
-/>
+          {/* Hero Section */}
+          <section className="relative z-20 w-full px-6 py-24 sm:py-32 lg:py-40">
+            <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+              <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+                Build skills that actually matter
+              </h1>
+              <p className="mt-6 max-w-2xl text-pretty text-base text-muted-foreground sm:text-lg">
+                A modern learning platform for students, professionals, and teams — structured, outcome-driven education that helps you grow real-world skills and prove them.
+              </p>
+              <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
+                <a
+                  href={ensureLocalizedPathname("/auth/register", params.lang)}
+                  className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  Get started
+                </a>
+                <a
+                  href={ensureLocalizedPathname("/courses", params.lang)}
+                  className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-transparent px-8 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  Browse courses
+                </a>
+              </div>
+            </div>
+          </section>
 
-           
           {/* Scroll Morph Hero Section */}
           <section className="w-full relative z-20">
-             <IntroAnimation />
+            <IntroAnimation />
           </section>
 
           {/* Radial Orbital Timeline Section */}

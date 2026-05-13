@@ -104,12 +104,12 @@ export function SignInForm({ dictionary }: { dictionary: DictionaryType }) {
           return
         }
 
-        // Check for account disabled error — redirect to reactivate page
+        // Check for account disabled error, redirect to reactivate page
         if (result.error.startsWith("ACCOUNT_DISABLED:")) {
           toast({
             variant: "destructive",
-            title: "Account Disabled",
-            description: "Redirecting to account reactivation...",
+            title: dictionary.auth.signIn.accountDisabled,
+            description: dictionary.auth.signIn.accountDisabledMessage,
           })
           router.push(
             ensureLocalizedPathname(

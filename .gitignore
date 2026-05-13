@@ -42,3 +42,11 @@ next-env.d.ts
 .claude
 .claude-ignore
 CLAUDE.md
+
+# impeccable files 
+impeccable
+.impeccable
+.claude
+skills-lock.json
+.agentrc.md
+.agentrc
