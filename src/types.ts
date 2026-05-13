@@ -2,7 +2,7 @@ import type { i18n } from "@/configs/i18n"
 import type { LucideIcon, icons } from "lucide-react"
 import type { ComponentType, SVGAttributes } from "react"
 import type { z } from "zod"
-import type { radii, themes } from "./configs/themes"
+import type { radii } from "./configs/themes"
 import type { ComingSoonSchema } from "./schemas/coming-soon-schema"
 import type { ForgotPasswordSchema } from "./schemas/forgot-passward-schema"
 import type { NewPasswordSchema } from "./schemas/new-passward-schema"
@@ -22,18 +22,15 @@ export type DirectionType = "ltr" | "rtl"
 
 export type LocaleType = (typeof i18n)["locales"][number]
 
-export type ThemeType = keyof typeof themes
-
 export type RadiusType = (typeof radii)[number]
 
 export type SettingsType = {
-  theme: ThemeType
+  primaryColor: string
   mode: ModeType
   radius: RadiusType
   layout: LayoutType
   locale: LocaleType
   sidebarMode: SidebarModeType
-  lightness: number
 }
 
 export interface IconProps extends SVGAttributes<SVGElement> {

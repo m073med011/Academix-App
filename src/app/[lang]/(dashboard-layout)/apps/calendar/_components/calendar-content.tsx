@@ -17,12 +17,12 @@ import { useCalendarContext } from "../_hooks/calendar-context"
 import { INITIAL_VIEW } from "../constants"
 
 const eventColors: Record<CategoryType, string> = {
-  Business: "hsl(var(--chart-1))",
-  Personal: "hsl(var(--chart-2))",
-  Family: "hsl(var(--chart-3))",
-  Holiday: "hsl(var(--chart-4))",
-  Health: "hsl(var(--chart-5))",
-  Miscellaneous: "hsl(var(--primary))",
+  Business: "var(--chart-1)",
+  Personal: "var(--chart-2)",
+  Family: "var(--chart-3)",
+  Holiday: "var(--chart-4)",
+  Health: "var(--chart-5)",
+  Miscellaneous: "var(--primary)",
 }
 
 export function CalendarContent() {

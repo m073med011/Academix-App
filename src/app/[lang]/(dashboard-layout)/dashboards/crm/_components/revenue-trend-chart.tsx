@@ -66,7 +66,7 @@ export function RevenueTrendChart({
           hide
         />
         <ChartTooltip content={<ModifiedChartTooltipContent hideIndicator />} />
-        <Bar dataKey="revenue" fill="hsl(var(--chart-2))" radius={radius} />
+        <Bar dataKey="revenue" fill="var(--chart-2)" radius={radius} />
       </BarChart>
     </ChartContainer>
   )

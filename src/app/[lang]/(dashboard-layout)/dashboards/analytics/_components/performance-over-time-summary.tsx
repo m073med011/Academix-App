@@ -16,7 +16,7 @@ export function PerformanceOverTimeSummary({
       <li className="flex gap-x-2">
         <Badge
           style={{
-            backgroundColor: "hsl(var(--chart-1))",
+            backgroundColor: "var(--chart-1)",
           }}
           className="size-12 aspect-square bg-chart-1"
           aria-hidden
@@ -35,7 +35,7 @@ export function PerformanceOverTimeSummary({
       <li className="flex gap-x-2">
         <Badge
           style={{
-            backgroundColor: "hsl(var(--chart-2))",
+            backgroundColor: "var(--chart-2)",
           }}
           className="size-12 aspect-square bg-chart-2"
           aria-hidden

@@ -1,4 +1,4 @@
-import { CreateOrganizationRequest } from "../_types/types"
+import { CreateOrganizationRequest } from "../../../../../types/Org_types/types"
 import { Organization, OrganizationMembership } from "@/types/api"
 
 import { apiClient } from "@/lib/api-client"

@@ -24,7 +24,9 @@ export const metadata: Metadata = {
     default: "Academix",
   },
   description: "",
-  metadataBase: new URL(process.env.BASE_URL as string),
+  metadataBase: new URL(process.env.BASE_URL && process.env.BASE_URL !== "undefined"
+      ? process.env.BASE_URL
+      : "http://localhost:3000"),
 }
 
 // Define fonts for the application

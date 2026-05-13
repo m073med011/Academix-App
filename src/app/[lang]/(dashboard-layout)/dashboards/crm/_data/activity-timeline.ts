@@ -6,7 +6,7 @@ export const activityTimelineData: ActivityTimelineType = {
     {
       type: "email",
       iconName: "Mail",
-      fill: "hsl(var(--chart-1))",
+      fill: "var(--chart-1)",
       title: "Follow-up Email to John Doe",
       description:
         "Followed up on the proposal sent last week. Awaiting response.",
@@ -28,7 +28,7 @@ export const activityTimelineData: ActivityTimelineType = {
     {
       type: "supportTicket",
       iconName: "TicketCheck",
-      fill: "hsl(var(--chart-2))",
+      fill: "var(--chart-2)",
       title: "Billing Discrepancy Support Ticket",
       description:
         "Ticket ID: TKT-12345 - Customer reported an overcharge, issue resolved with refund processed.",
@@ -45,7 +45,7 @@ export const activityTimelineData: ActivityTimelineType = {
     {
       type: "dealUpdate",
       iconName: "DollarSign",
-      fill: "hsl(var(--chart-3))",
+      fill: "var(--chart-3)",
       title: "Enterprise Subscription Deal - Acme Corp",
       description:
         "Negotiation completed. Deal closed at $50,000 annual value.",
@@ -67,7 +67,7 @@ export const activityTimelineData: ActivityTimelineType = {
     {
       type: "call",
       iconName: "Phone",
-      fill: "hsl(var(--chart-4))",
+      fill: "var(--chart-4)",
       title: "Client Call with Jane Smith",
       description:
         "15-minute call. Jane showed interest and requested a product demo.",
@@ -82,7 +82,7 @@ export const activityTimelineData: ActivityTimelineType = {
     },
     {
       type: "meeting",
-      fill: "hsl(var(--chart-5))",
+      fill: "var(--chart-5)",
       iconName: "Users",
       title: "Quarterly Planning Session - Global Tech Team",
       description:
@@ -120,7 +120,7 @@ export const activityTimelineData: ActivityTimelineType = {
     {
       type: "note",
       iconName: "FileText",
-      fill: "hsl(var(--muted-foreground))",
+      fill: "var(--muted-foreground)",
       title: "Internal Note by Alice Thompson",
       description:
         "Client expressed interest in an upsell package. Follow-up recommended next week.",

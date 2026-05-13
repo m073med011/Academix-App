@@ -30,9 +30,9 @@ export function ConversionFunnelChart({
           dataKey="value"
           type="bump"
           activeDot={false}
-          fill="hsl(var(--chart-2))"
+          fill="var(--chart-2)"
           fillOpacity={0.4}
-          stroke="hsl(var(--chart-2))"
+          stroke="var(--chart-2)"
         />
       </AreaChart>
     </ChartContainer>

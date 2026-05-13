@@ -5,6 +5,7 @@ import { toast } from "sonner"
 
 import type { TabItem } from "@/app/[lang]/(dashboard-layout)/(design-system)/cards/basic/_components/card-with-underline-tabs"
 import { Organization } from "@/types/api"
+import { useRole } from "@/hooks/use-role"
 
 import { CardWithUnderlineTabs } from "@/app/[lang]/(dashboard-layout)/(design-system)/cards/basic/_components/card-with-underline-tabs"
 import { CoursesTab } from "./courses-tab"
@@ -74,8 +75,13 @@ export default function OrganizationDetailView({
   const dict = dictionary
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isRole } = useRole()
 
-  const validTabs = ["about", "courses", "levels", "terms", "students", "members", "settings", "roles"]
+  const baseValidTabs = ["about", "courses", "levels", "terms", "students", "members"]
+  const validTabs = isRole("organizer") 
+    ? [...baseValidTabs, "settings", "roles"] 
+    : baseValidTabs
+
   const tabFromUrl = searchParams.get("tab")
   const currentTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : "about"
 
@@ -90,7 +96,7 @@ export default function OrganizationDetailView({
   }
 
   // Define tabs for CardWithUnderlineTabs
-  const organizationTabs: TabItem[] = [
+  const baseTabs: TabItem[] = [
     {
       value: "about",
       label: dict.tabs.about,
@@ -139,17 +145,23 @@ export default function OrganizationDetailView({
       label: dict.tabs.members,
       content: <PlaceholderTab message={dict.courses.comingSoon.members} />,
     },
-    {
-      value: "settings",
-      label: dict.tabs.settings,
-      content: <PlaceholderTab message={dict.courses.comingSoon.settings} />,
-    },
-    {
-      value: "roles",
-      label: dict.tabs.rolesPermissions,
-      content: <PlaceholderTab message={dict.courses.comingSoon.roles} />,
-    },
   ]
+
+  const organizationTabs: TabItem[] = isRole("organizer")
+    ? [
+        ...baseTabs,
+        {
+          value: "settings",
+          label: dict.tabs.settings,
+          content: <PlaceholderTab message={dict.courses.comingSoon.settings} />,
+        },
+        {
+          value: "roles",
+          label: dict.tabs.rolesPermissions,
+          content: <PlaceholderTab message={dict.courses.comingSoon.roles} />,
+        },
+      ]
+    : baseTabs
 
   return (
     <div className="container space-y-6 p-4 md:p-6">

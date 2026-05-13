@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/chart"
 
 const radialBarChartsData = [
-  { name: "18-24", uv: 31.47, pv: 2400, fill: "hsl(var(--chart-1))" },
-  { name: "25-29", uv: 26.69, pv: 4567, fill: "hsl(var(--chart-2))" },
-  { name: "30-34", uv: 15.69, pv: 1398, fill: "hsl(var(--chart-3))" },
-  { name: "35-39", uv: 8.22, pv: 9800, fill: "hsl(var(--chart-4))" },
+  { name: "18-24", uv: 31.47, pv: 2400, fill: "var(--chart-1)" },
+  { name: "25-29", uv: 26.69, pv: 4567, fill: "var(--chart-2)" },
+  { name: "30-34", uv: 15.69, pv: 1398, fill: "var(--chart-3)" },
+  { name: "35-39", uv: 8.22, pv: 9800, fill: "var(--chart-4)" },
 ]
 
 export function RadialBarCharts() {

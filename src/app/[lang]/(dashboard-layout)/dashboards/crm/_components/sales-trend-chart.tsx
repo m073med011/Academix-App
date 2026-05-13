@@ -20,19 +20,19 @@ import {
 const chartConfig = {
   lead: {
     label: "Lead",
-    color: "hsl(var(--chart-1))",
+    color: "var(--chart-1)",
   },
   proposal: {
     label: "Proposal",
-    color: "hsl(var(--chart-2))",
+    color: "var(--chart-2)",
   },
   negotiation: {
     label: "Negotiation",
-    color: "hsl(var(--chart-3))",
+    color: "var(--chart-3)",
   },
   closed: {
     label: "Closed",
-    color: "hsl(var(--chart-4))",
+    color: "var(--chart-4)",
   },
 } satisfies ChartConfig
 

@@ -7,13 +7,12 @@ import type { LocaleType, SettingsType } from "@/types"
 import type { ReactNode } from "react"
 
 export const defaultSettings: SettingsType = {
-  theme: "zinc",
+  primaryColor: "#2563eb",
   mode: "system",
   radius: 0.5,
   layout: "vertical",
   locale: "en",
   sidebarMode: "open",
-  lightness: 0,
 }
 
 export const SettingsContext = createContext<
@@ -38,7 +37,15 @@ export function SettingsProvider({
 
   useEffect(() => {
     if (storedSettings) {
-      setSettings(JSON.parse(storedSettings))
+      const parsed = JSON.parse(storedSettings)
+      // Migrate old cookie: strip obsolete fields, merge with defaults
+      const { theme: _t, lightness: _l, ...rest } = parsed
+      const migrated = { ...defaultSettings, locale, ...rest }
+      // Ensure primaryColor is always a valid hex
+      if (!migrated.primaryColor || typeof migrated.primaryColor !== "string" || !migrated.primaryColor.startsWith("#")) {
+        migrated.primaryColor = defaultSettings.primaryColor
+      }
+      setSettings(migrated)
     } else {
       setSettings({ ...defaultSettings, locale })
     }

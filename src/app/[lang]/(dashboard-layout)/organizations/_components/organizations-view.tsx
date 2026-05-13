@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Loader2 } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 import { Organization, OrganizationMembership } from "@/types/api"
 
 import { organizationService } from "../_services/organization.service"
-import { CreateOrganizationModal } from "./create-organization-modal"
+import { CreateOrganizationModal } from "./createorganization-modal"
 import { OrganizationCard } from "./organization-card"
 import { OrganizationsHeader } from "./organizations-header"
 import { OrganizationsSkeleton } from "./organizations-skeleton"
@@ -22,21 +23,28 @@ export default function OrganizationsView({
 }: OrganizationsViewProps) {
   const [memberships, setMemberships] = useState<OrganizationMembership[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefetching, setIsRefetching] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = async (isBackground = false) => {
     try {
-      setLoading(true)
+      if (isBackground) {
+        setIsRefetching(true)
+      } else {
+        setLoading(true)
+      }
       const response = await organizationService.getUserOrganizations()
-      
-      if (response.success && Array.isArray(response.data)) {
-        setMemberships(response.data)
+
+      if (response.success) {
+        const data = response.data
+        setMemberships(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error("Failed to fetch organizations:", error)
     } finally {
       setLoading(false)
+      setIsRefetching(false)
     }
   }
 
@@ -45,11 +53,16 @@ export default function OrganizationsView({
   }, [])
 
   const handleCreateSuccess = () => {
-    // Refresh organizations list after creation
-    fetchOrganizations()
+    // Small delay to let the backend commit the new membership before refetching
+    setTimeout(() => fetchOrganizations(true), 800)
   }
 
-  const filteredMemberships = memberships.filter((membership) => {
+  // Filter out memberships where organizationId is null or unpopulated (backend bug)
+  const validMemberships = memberships.filter(
+    (m) => m.organizationId !== null && typeof m.organizationId === "object"
+  )
+
+  const filteredMemberships = validMemberships.filter((membership) => {
     const org = membership.organizationId as Organization
     return org?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false
   })
@@ -66,15 +79,23 @@ export default function OrganizationsView({
       {loading ? (
         <OrganizationsSkeleton />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredMemberships.map((membership) => (
-            <OrganizationCard
-              key={membership._id}
-              membership={membership}
-              dictionary={dictionary.list}
-            />
-          ))}
-        </div>
+        <>
+          {isRefetching && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Refreshing...</span>
+            </div>
+          )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredMemberships.map((membership) => (
+              <OrganizationCard
+                key={membership._id}
+                membership={membership}
+                dictionary={dictionary.list}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <CreateOrganizationModal

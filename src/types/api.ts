@@ -1,7 +1,7 @@
 // LMS Backend API Type Definitions
 // These types match the MongoDB schemas from lms-backend
 
-import { Organization, OrganizationMembership } from "@/app/[lang]/(dashboard-layout)/organizations/_types/types"
+import { Organization, OrganizationMembership } from "@/types/Org_types/types"
 
 // ============================================
 // Enums
@@ -376,7 +376,7 @@ export interface CreateMaterialRequest {
 // Organization Types
 // ============================================
 
-export * from "@/app/[lang]/(dashboard-layout)/organizations/_types/types"
+export * from "@/types/Org_types/types"
 
 // ============================================
 // Payment Types

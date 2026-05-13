@@ -149,7 +149,7 @@ export function DashboardOverviewCardV2({
   period,
   action,
   icon: Icon,
-  iconColor = "hsl(var(--primary))",
+  iconColor = "var(--primary)",
   formatStyle = "regular",
   className,
   contentClassName,

@@ -5,12 +5,12 @@ export const newVsReturningVisitors: NewVsReturningVisitorsType = {
     new: {
       value: 7234,
       percentageChange: 0.65,
-      fill: "hsl(var(--chart-1))",
+      fill: "var(--chart-1)",
     },
     returning: {
       value: 4128,
       percentageChange: 0.35,
-      fill: "hsl(var(--chart-2))",
+      fill: "var(--chart-2)",
     },
   },
 }

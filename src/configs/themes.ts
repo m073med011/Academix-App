@@ -1,100 +1,173 @@
+export type ThemeColors = {
+  background: string
+  foreground: string
+  card: string
+  cardForeground: string
+  popover: string
+  popoverForeground: string
+  primary: string
+  primaryForeground: string
+  secondary: string
+  secondaryForeground: string
+  muted: string
+  mutedForeground: string
+  accent: string
+  accentForeground: string
+  destructive: string
+  destructiveForeground: string
+  border: string
+  input: string
+  ring: string
+  radius?: string
+}
+
 export const radii = [0, 0.3, 0.5, 0.75, 1]
 
-export const themes = {
-  zinc: {
-    label: "Zinc",
-    activeColor: {
-      light: "240 5.9% 10%",
-      dark: "240 5.2% 33.9%",
-      foreground: "0 0% 98%",
+// ─── Color Utilities ─────────────────────────────────────────────────────────
+
+function hexToHsl(hex: string): [number, number, number] {
+  let r = 0,
+    g = 0,
+    b = 0
+  if (hex.length === 4) {
+    r = parseInt("0x" + hex[1] + hex[1])
+    g = parseInt("0x" + hex[2] + hex[2])
+    b = parseInt("0x" + hex[3] + hex[3])
+  } else if (hex.length === 7) {
+    r = parseInt("0x" + hex[1] + hex[2])
+    g = parseInt("0x" + hex[3] + hex[4])
+    b = parseInt("0x" + hex[5] + hex[6])
+  }
+
+  r /= 255
+  g /= 255
+  b /= 255
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b)
+  let h = 0,
+    s = 0
+  const l = (max + min) / 2
+
+  if (max !== min) {
+    const d = max - min
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0)
+        break
+      case g:
+        h = (b - r) / d + 2
+        break
+      case b:
+        h = (r - g) / d + 4
+        break
+    }
+    h /= 6
+  }
+  return [h * 360, s * 100, l * 100]
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  l /= 100
+  const a = (s * Math.min(l, 1 - l)) / 100
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, "0")
+  }
+  return `#${f(0)}${f(8)}${f(4)}`
+}
+
+/** Returns relative luminance of a HEX color (0–1). */
+function relativeLuminance(hex: string): number {
+  let r = 0,
+    g = 0,
+    b = 0
+  if (hex.length === 4) {
+    r = parseInt("0x" + hex[1] + hex[1])
+    g = parseInt("0x" + hex[2] + hex[2])
+    b = parseInt("0x" + hex[3] + hex[3])
+  } else if (hex.length === 7) {
+    r = parseInt("0x" + hex[1] + hex[2])
+    g = parseInt("0x" + hex[3] + hex[4])
+    b = parseInt("0x" + hex[5] + hex[6])
+  }
+  const toLinear = (c: number) => {
+    c /= 255
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  }
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+}
+
+/** Pick white or dark foreground based on contrast with the primary color. */
+function contrastForeground(primaryHex: string): string {
+  return relativeLuminance(primaryHex) > 0.4 ? "#18181b" : "#fafafa"
+}
+
+// ─── Theme Generator ─────────────────────────────────────────────────────────
+
+export function generateThemeFromColor(primaryHex: string): {
+  light: ThemeColors
+  dark: ThemeColors
+} {
+  // Fallback if the value is undefined or not a valid hex
+  if (!primaryHex || typeof primaryHex !== "string" || !primaryHex.startsWith("#")) {
+    primaryHex = "#2563eb"
+  }
+  const [h] = hexToHsl(primaryHex)
+
+  // Light mode primary is the user's chosen color
+  const lightPrimary = primaryHex
+  const lightPrimaryFg = contrastForeground(lightPrimary)
+
+  // Dark mode primary — slightly brighter version
+  const darkPrimary = hslToHex(h, 70, 55)
+  const darkPrimaryFg = contrastForeground(darkPrimary)
+
+  return {
+    light: {
+      background: "#ffffff",
+      foreground: "#09090b",
+      card: "#ffffff",
+      cardForeground: "#09090b",
+      popover: "#ffffff",
+      popoverForeground: "#09090b",
+      primary: lightPrimary,
+      primaryForeground: lightPrimaryFg,
+      secondary: hslToHex(h, 8, 96),
+      secondaryForeground: "#18181b",
+      muted: hslToHex(h, 8, 96),
+      mutedForeground: "#71717a",
+      accent: hslToHex(h, 8, 96),
+      accentForeground: "#18181b",
+      destructive: "#ef4444",
+      destructiveForeground: "#fafafa",
+      border: hslToHex(h, 10, 90),
+      input: hslToHex(h, 10, 90),
+      ring: lightPrimary,
     },
-  },
-  slate: {
-    label: "Slate",
-    activeColor: {
-      light: "215.4 16.3% 46.9%",
-      dark: "215.3 19.3% 34.5%",
-      foreground: "210 40% 98%",
+    dark: {
+      background: "#09090b",
+      foreground: "#fafafa",
+      card: "#09090b",
+      cardForeground: "#fafafa",
+      popover: "#09090b",
+      popoverForeground: "#fafafa",
+      primary: darkPrimary,
+      primaryForeground: darkPrimaryFg,
+      secondary: hslToHex(h, 10, 16),
+      secondaryForeground: "#fafafa",
+      muted: hslToHex(h, 10, 16),
+      mutedForeground: "#a1a1aa",
+      accent: hslToHex(h, 10, 16),
+      accentForeground: "#fafafa",
+      destructive: "#a50e0e",
+      destructiveForeground: "#fafafa",
+      border: hslToHex(h, 10, 16),
+      input: hslToHex(h, 10, 16),
+      ring: darkPrimary,
     },
-  },
-  stone: {
-    label: "Stone",
-    activeColor: {
-      light: "25 5.3% 44.7%",
-      dark: "33.3 5.5% 32.4%",
-      foreground: "60 9.1% 97.8%",
-    },
-  },
-  gray: {
-    label: "Gray",
-    activeColor: {
-      light: "220 8.9% 46.1%",
-      dark: "215 13.8% 34.1%",
-      foreground: "210 20% 98%",
-    },
-  },
-  neutral: {
-    label: "Neutral",
-    activeColor: {
-      light: "0 0% 45.1%",
-      dark: "0 0% 32.2%",
-      foreground: "0 0% 98%",
-    },
-  },
-  red: {
-    label: "Red",
-    activeColor: {
-      light: "0 72.2% 50.6%",
-      dark: "0 72.2% 50.6%",
-      foreground: "0 85.7% 97.3%",
-    },
-  },
-  rose: {
-    label: "Rose",
-    activeColor: {
-      light: "346.8 77.2% 49.8%",
-      dark: "346.8 77.2% 49.8%",
-      foreground: "355.7 100% 97.3%",
-    },
-  },
-  orange: {
-    label: "Orange",
-    activeColor: {
-      light: "24.6 95% 53.1%",
-      dark: "20.5 90.2% 48.2%",
-      foreground: "60 9.1% 97.8%",
-    },
-  },
-  green: {
-    label: "Green",
-    activeColor: {
-      light: "142.1 76.2% 36.3%",
-      dark: "142.1 70.6% 45.3%",
-      foreground: "355.7 100% 97.3%",
-    },
-  },
-  blue: {
-    label: "Blue",
-    activeColor: {
-      light: "221.2 83.2% 53.3%",
-      dark: "217.2 91.2% 59.8%",
-      foreground: "210 40% 98%",
-    },
-  },
-  yellow: {
-    label: "Yellow",
-    activeColor: {
-      light: "47.9 95.8% 53.1%",
-      dark: "47.9 95.8% 53.1%",
-      foreground: "26 83.3% 14.1%",
-    },
-  },
-  violet: {
-    label: "Violet",
-    activeColor: {
-      light: "262.1 83.3% 57.8%",
-      dark: "263.4 70% 50.4%",
-      foreground: "210 20% 98%",
-    },
-  },
+  }
 }

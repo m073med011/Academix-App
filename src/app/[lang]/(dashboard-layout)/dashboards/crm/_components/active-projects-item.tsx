@@ -11,15 +11,15 @@ import { ActiveProjectsItemChart } from "./active-projects-item-chart"
 const statusColors = {
   "On Track": {
     text: "text-success",
-    chart: "hsl(var(--success))",
+    chart: "var(--success)",
   },
   "At Risk": {
     text: "text-destructive",
-    chart: "hsl(var(--destructive))",
+    chart: "var(--destructive)",
   },
   "On Hold": {
     text: "text-muted-foreground",
-    chart: "hsl(var(--muted-foreground))",
+    chart: "var(--muted-foreground)",
   },
 }
 

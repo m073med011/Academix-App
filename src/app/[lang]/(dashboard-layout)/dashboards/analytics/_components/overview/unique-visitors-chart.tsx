@@ -52,9 +52,9 @@ export function UniqueVisitorsChart({
         <Area
           dataKey="value"
           type="natural"
-          fill="hsl(var(--chart-1))"
+          fill="var(--chart-1)"
           fillOpacity={0.4}
-          stroke="hsl(var(--chart-1))"
+          stroke="var(--chart-1)"
         />
       </AreaChart>
     </ChartContainer>

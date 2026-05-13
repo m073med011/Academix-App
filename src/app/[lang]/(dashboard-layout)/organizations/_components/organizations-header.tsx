@@ -2,6 +2,7 @@
 
 import { Plus, Search } from "lucide-react"
 
+import { useRole } from "@/hooks/use-role"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -24,21 +25,28 @@ export function OrganizationsHeader({
   setSearchQuery,
   onCreateClick,
 }: OrganizationsHeaderProps) {
+  const { isRole } = useRole()
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">
           {dictionary.title}
         </h2>
-        <Button onClick={onCreateClick}>
-          <Plus className="mr-2 h-4 w-4" /> {dictionary.createOrganization}
-        </Button>
+        {isRole("organizer") && (
+          <Button onClick={onCreateClick}>
+            <Plus className="mr-2 h-4 w-4" /> {dictionary.createOrganization}
+          </Button>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
+            type="search"
+            name="organizations-search"
+            // autoComplete="off"
             placeholder={dictionary.searchPlaceholder}
             className="pl-9"
             value={searchQuery}

@@ -48,7 +48,7 @@ export function ActivityTimelineItem({
       <TimelineHeading>{data.title}</TimelineHeading>
       <TimelineDot
         style={{
-          backgroundColor: data.fill || "hsl(var(--muted-foreground))",
+          backgroundColor: data.fill || "var(--muted-foreground)",
         }}
         customIconName={data.iconName}
         customStatusName={data.type}

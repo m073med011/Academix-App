@@ -67,8 +67,8 @@ export function ConversionRateChart({
         <Area
           dataKey="value"
           type="step"
-          fill="hsl(var(--chart-4))"
-          stroke="hsl(var(--chart-4))"
+          fill="var(--chart-4)"
+          stroke="var(--chart-4)"
           strokeWidth={2}
           dot={false}
         />

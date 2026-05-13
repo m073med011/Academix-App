@@ -77,14 +77,14 @@ export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
         <Bar
           dataKey="totalCustomers"
           stackId="a"
-          fill="hsl(var(--chart-2))"
+          fill="var(--chart-2)"
           radius={[0, 0, radius, radius]}
         />
 
         <Bar
           dataKey="lostCustomers"
           stackId="a"
-          fill="hsl(var(--chart-1))"
+          fill="var(--chart-1)"
           radius={[radius, radius, 0, 0]}
         >
           <LabelList
@@ -96,7 +96,7 @@ export function ChurnRateChart({ data }: { data: ChurnRateType["months"] }) {
             fontWeight={700}
           />
           {data.map((item) => (
-            <Cell key={item.month} fill="hsl(var(--chart-1))" />
+            <Cell key={item.month} fill="var(--chart-1)" />
           ))}
         </Bar>
       </BarChart>

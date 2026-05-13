@@ -17,12 +17,12 @@ export const overviewData: OverviewType = {
     averageValue: 73333.33,
     percentageChange: -0.04,
     perMonth: [
-      { month: "January", value: 110000, fill: "hsl(var(--chart-1))" },
-      { month: "February", value: -90000, fill: "hsl(var(--chart-2))" },
-      { month: "March", value: 220000, fill: "hsl(var(--chart-1))" },
-      { month: "April", value: -130000, fill: "hsl(var(--chart-2))" },
-      { month: "May", value: 135000, fill: "hsl(var(--chart-1))" },
-      { month: "June", value: 195000, fill: "hsl(var(--chart-1))" },
+      { month: "January", value: 110000, fill: "var(--chart-1)" },
+      { month: "February", value: -90000, fill: "var(--chart-2)" },
+      { month: "March", value: 220000, fill: "var(--chart-1)" },
+      { month: "April", value: -130000, fill: "var(--chart-2)" },
+      { month: "May", value: 135000, fill: "var(--chart-1)" },
+      { month: "June", value: 195000, fill: "var(--chart-1)" },
     ],
   },
   bounceRate: {
