@@ -19,6 +19,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { LanguageDropdown } from "@/components/language-dropdown"
+import { ModeDropdown } from "@/components/mode-dropdown"
+import { Customizer } from "@/components/layout/customizer"
 
 interface LandingHeaderProps {
   dictionary: DictionaryType
@@ -39,7 +41,9 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
   ]
 
   return (
-    <header className="fixed top-4 z-50 w-full max-w-5xl left-0 right-0 mx-auto border rounded-full bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-lg">
+    <>
+      <Customizer />
+      <header className="fixed top-4 z-50 w-full max-w-5xl left-0 right-0 mx-auto border rounded-full bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-lg">
       <div className="flex h-14 items-center px-6">
         {/* Left: Logo */}
         <div className="flex flex-1 items-center justify-start">
@@ -76,6 +80,7 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
             <LanguageDropdown dictionary={dictionary} />
+            <ModeDropdown dictionary={dictionary} />
             <Button variant="ghost" size="sm" asChild className="rounded-full">
               <Link href={ensureLocalizedPathname("/auth/signin", locale)}>
                 {t.signIn}
@@ -143,8 +148,9 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
                   >
                     {t.getStarted}
                   </Link>
-                  <div className="mt-4">
+                  <div className="mt-4 flex items-center gap-2">
                     <LanguageDropdown dictionary={dictionary} />
+                    <ModeDropdown dictionary={dictionary} />
                   </div>
                 </div>
               </SheetContent>
@@ -152,6 +158,7 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
           </div>
         </div>
       </div>
-    </header>
+      </header>
+    </>
   )
 }

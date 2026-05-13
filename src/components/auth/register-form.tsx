@@ -407,8 +407,8 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
                 dictionary={dictionary}
               />
               {form.watch("imageProfileUrl") && (
-                <p className="text-sm text-primary text-center">
-                  ✓ Image uploaded successfully
+                <p className="text-sm text-muted-foreground text-start">
+                  {t.imageUploaded}
                 </p>
               )}
             </div>
@@ -416,6 +416,7 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
         </Steps>
 
         {/* Navigation Buttons */}
+
         <div className="flex gap-2">
           {activeStep > 0 && (
             <Button
@@ -427,6 +428,7 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
               {t.previous}
             </Button>
           )}
+
           {activeStep < 3 ? (
             <Button
               type="button"
@@ -445,7 +447,9 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
               {t.finish}
             </ButtonLoading>
           )}
+
         </div>
+
 
         {/* Footer Links */}
         <div className="text-center text-sm">
