@@ -56,6 +56,7 @@ export function Auth({
               priority
               className="dark:invert"
             />
+            
           </Link>
           <div className="flex items-center gap-1">
             <LanguageDropdown dictionary={dictionary} />
@@ -63,7 +64,7 @@ export function Auth({
           </div>
         </header>
         <div className="flex flex-1 items-start justify-center px-6 pb-16 pt-6 md:items-center md:px-10 md:py-12">
-          <div className="w-full max-w-[26rem]">
+          <div className="w-full max-w-104">
             {children}
           </div>
         </div>
