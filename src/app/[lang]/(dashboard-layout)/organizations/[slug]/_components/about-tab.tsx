@@ -2,7 +2,7 @@
 
 import { Calendar, Mail, User as UserIcon } from "lucide-react"
 
-import { Organization,User } from "@/types/api"
+import {  Organization,User } from "@/types/api"
 
 import { formatDate } from "@/lib/utils"
 
