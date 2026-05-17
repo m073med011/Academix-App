@@ -41,7 +41,7 @@ export function DangerZone() {
       setIsDisabling(true)
       await userService.disableAccount()
       toast.success("Account disabled successfully")
-      await signOut({ callbackUrl: ensureLocalizedPathname("/sign-in", locale) })
+      await signOut({ callbackUrl: ensureLocalizedPathname("/auth", locale) })
     } catch (error) {
       toast.error("Failed to disable account")
     } finally {
@@ -54,7 +54,7 @@ export function DangerZone() {
       setIsDeleting(true)
       await userService.deleteAccount()
       toast.success("Account deleted permanently")
-      await signOut({ callbackUrl: ensureLocalizedPathname("/sign-in", locale) })
+      await signOut({ callbackUrl: ensureLocalizedPathname("/auth", locale) })
     } catch (error) {
       toast.error("Failed to delete account")
     } finally {

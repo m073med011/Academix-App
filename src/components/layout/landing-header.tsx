@@ -82,12 +82,12 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
             <LanguageDropdown dictionary={dictionary} />
             <ModeDropdown dictionary={dictionary} />
             <Button variant="ghost" size="sm" asChild className="rounded-full">
-              <Link href={ensureLocalizedPathname("/auth/signin", locale)}>
+              <Link href={ensureLocalizedPathname("/auth", locale)}>
                 {t.signIn}
               </Link>
             </Button>
             <Button size="sm" asChild className="rounded-full">
-              <Link href={ensureLocalizedPathname("/auth/register", locale)}>
+              <Link href={ensureLocalizedPathname("/auth?mode=register", locale)}>
                 {t.getStarted}
               </Link>
             </Button>
@@ -100,7 +100,7 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
               asChild
               className="hidden xs:inline-flex rounded-full"
             >
-              <Link href={ensureLocalizedPathname("/auth/register", locale)}>
+              <Link href={ensureLocalizedPathname("/auth?mode=register", locale)}>
                 {t.getStarted}
               </Link>
             </Button>
@@ -137,13 +137,13 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
                   ))}
                   <hr className="my-2" />
                   <Link
-                    href={ensureLocalizedPathname("/auth/signin", locale)}
+                    href={ensureLocalizedPathname("/auth", locale)}
                     className="text-lg font-medium transition-colors hover:text-foreground/80"
                   >
                     {t.signIn}
                   </Link>
                   <Link
-                    href={ensureLocalizedPathname("/auth/register", locale)}
+                    href={ensureLocalizedPathname("/auth?mode=register", locale)}
                     className="text-lg font-medium transition-colors hover:text-foreground/80"
                   >
                     {t.getStarted}

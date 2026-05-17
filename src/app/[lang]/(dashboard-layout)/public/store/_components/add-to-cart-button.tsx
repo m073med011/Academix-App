@@ -57,7 +57,7 @@ export function AddToCartButton({
       // Redirect to login page if user is not authenticated
       if (error instanceof ApiClientError && error.isUnauthorized()) {
         const locale = settings.locale || "en"
-        router.push(`/${locale}/sign-in`)
+        router.push(`/${locale}/auth`)
         return
       }
       console.error("Cart operation failed:", error)

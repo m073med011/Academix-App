@@ -2,35 +2,36 @@
 
 import { useState } from "react"
 import {
-  ArrowLeft,
-  CheckCircle,
+  Check,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
+  Clock,
+  Download,
+  Eye,
   ExternalLink,
   FileText,
   HelpCircle,
   Link as LinkIcon,
   Pencil,
   PlayCircle,
-  ClipboardList,
-  Eye,
-  Download,
-  Clock,
 } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
-import type { CourseFormData, CourseContent } from "../../types"
+import type { CourseContent, CourseFormData } from "../../types"
 import { WIZARD_STEPS } from "../../types"
 
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import { Separator } from "@/components/ui/separator"
+
+import { Section } from "../wizard-shell"
 
 interface ReviewStepProps {
   dictionary: DictionaryType
@@ -40,44 +41,347 @@ interface ReviewStepProps {
   onEditStep: (step: number) => void
 }
 
-// Helper function to get the icon for content type
-const getContentTypeIcon = (type: CourseContent["type"]) => {
+const CONTENT_TYPE_LABEL: Record<CourseContent["type"], string> = {
+  video: "Video",
+  text: "Article",
+  quiz: "Quiz",
+  assignment: "Assignment",
+  link: "Link",
+}
+
+function ContentTypeGlyph({ type }: { type: CourseContent["type"] }) {
+  const common = "size-3.5 text-muted-foreground"
   switch (type) {
     case "video":
-      return <PlayCircle className="size-4 text-blue-500" />
-    case "text":
-      return <FileText className="size-4 text-green-500" />
+      return <PlayCircle className={common} aria-hidden />
     case "quiz":
-      return <HelpCircle className="size-4 text-purple-500" />
+      return <HelpCircle className={common} aria-hidden />
     case "assignment":
-      return <ClipboardList className="size-4 text-orange-500" />
+      return <ClipboardList className={common} aria-hidden />
     case "link":
-      return <LinkIcon className="size-4 text-cyan-500" />
+      return <LinkIcon className={common} aria-hidden />
+    case "text":
     default:
-      return <FileText className="size-4 text-muted-foreground" />
+      return <FileText className={common} aria-hidden />
   }
 }
 
-// Helper function to get the content type label
-const getContentTypeLabel = (type: CourseContent["type"]) => {
-  switch (type) {
-    case "video":
-      return "Video"
-    case "text":
-      return "Article"
-    case "quiz":
-      return "Quiz"
-    case "assignment":
-      return "Assignment"
-    case "link":
-      return "Link"
-    default:
-      return type
-  }
+function EditLink({
+  onClick,
+  label = "Edit",
+}: {
+  onClick: () => void
+  label?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+    >
+      <Pencil className="size-3" />
+      {label}
+    </button>
+  )
 }
 
-// Module preview component
-function CurriculumModulePreview({
+function DefinitionRow({
+  term,
+  children,
+}: {
+  term: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4 py-2 text-sm">
+      <dt className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+        {term}
+      </dt>
+      <dd className="text-foreground">{children}</dd>
+    </div>
+  )
+}
+
+export function ReviewStep({
+  dictionary,
+  formData,
+  onEditStep,
+}: ReviewStepProps) {
+  const t = dictionary.profilePage.createCourse.review
+  const tActions = dictionary.profilePage.createCourse.actions
+
+  const basicInfoComplete = Boolean(formData.title && formData.description)
+  const curriculumComplete = formData.modules.length > 0
+  const pricingComplete =
+    formData.enrollmentType === "free" || formData.price > 0
+  const mediaComplete = Boolean(formData.thumbnailUrl)
+
+  const allChecksPass =
+    basicInfoComplete && curriculumComplete && pricingComplete && mediaComplete
+
+  const totalLessons = formData.modules.reduce(
+    (acc, m) => acc + m.contents.length,
+    0
+  )
+
+  return (
+    <div className="flex flex-col gap-10">
+      {/* Readiness strip — replaces the sidebar Card. Editorial, inline. */}
+      <div className="flex flex-col gap-3 border-y py-4">
+        <p
+          className={cn(
+            "text-sm",
+            allChecksPass ? "text-foreground" : "text-muted-foreground"
+          )}
+        >
+          {allChecksPass
+            ? t.allChecksPassed
+            : "Almost there — a few sections still need attention."}
+        </p>
+        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+          <ChecklistItem
+            label={t.basicInfoComplete}
+            done={basicInfoComplete}
+            onJump={() => onEditStep(WIZARD_STEPS.BASIC_INFO)}
+          />
+          <ChecklistItem
+            label={t.curriculumAdded}
+            done={curriculumComplete}
+            onJump={() => onEditStep(WIZARD_STEPS.CURRICULUM)}
+          />
+          <ChecklistItem
+            label={t.pricingSet}
+            done={pricingComplete}
+            onJump={() => onEditStep(WIZARD_STEPS.PRICING)}
+          />
+          <ChecklistItem
+            label={t.mediaUploaded}
+            done={mediaComplete}
+            onJump={() => onEditStep(WIZARD_STEPS.MEDIA)}
+          />
+        </ul>
+      </div>
+
+      <Section
+        eyebrow={t.basicInformation}
+        caption={
+          <span className="flex items-center gap-3 text-xs text-muted-foreground">
+            <EditLink
+              onClick={() => onEditStep(WIZARD_STEPS.BASIC_INFO)}
+              label={tActions.edit}
+            />
+          </span>
+        }
+      >
+        <dl>
+          <DefinitionRow
+            term={dictionary.profilePage.createCourse.basicInfo.courseTitle}
+          >
+            {formData.title || (
+              <span className="text-muted-foreground">Not set</span>
+            )}
+          </DefinitionRow>
+          <Separator className="opacity-60" />
+          <DefinitionRow term={t.category}>
+            {formData.category || (
+              <span className="text-muted-foreground">Not set</span>
+            )}
+          </DefinitionRow>
+          <Separator className="opacity-60" />
+          <DefinitionRow
+            term={dictionary.profilePage.createCourse.basicInfo.targetAudience}
+          >
+            <span className="capitalize">{formData.level}</span>
+          </DefinitionRow>
+          {formData.description ? (
+            <>
+              <Separator className="opacity-60" />
+              <DefinitionRow term="Description">
+                <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
+                  {formData.description}
+                </p>
+              </DefinitionRow>
+            </>
+          ) : null}
+        </dl>
+      </Section>
+
+      <Separator />
+
+      <Section
+        eyebrow={t.curriculum}
+        caption={
+          <span className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span>
+              {formData.modules.length} {t.sections} · {totalLessons}{" "}
+              {t.lectures}
+            </span>
+            <span aria-hidden>·</span>
+            <EditLink
+              onClick={() => onEditStep(WIZARD_STEPS.CURRICULUM)}
+              label={tActions.edit}
+            />
+          </span>
+        }
+      >
+        {formData.modules.length === 0 ? (
+          <p className="text-sm italic text-muted-foreground">
+            No modules added yet.
+          </p>
+        ) : (
+          <div className="flex flex-col">
+            {formData.modules.map((module, moduleIndex) => (
+              <ModuleSummary
+                key={module.id}
+                module={module}
+                moduleIndex={moduleIndex}
+              />
+            ))}
+          </div>
+        )}
+      </Section>
+
+      <Separator />
+
+      <Section
+        eyebrow={t.courseMedia}
+        caption={
+          <span className="flex items-center gap-3 text-xs text-muted-foreground">
+            <EditLink
+              onClick={() => onEditStep(WIZARD_STEPS.MEDIA)}
+              label={tActions.edit}
+            />
+          </span>
+        }
+      >
+        <div className="flex items-start gap-4">
+          <div className="aspect-video w-40 shrink-0 overflow-hidden rounded-md border bg-muted">
+            {formData.thumbnailUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={formData.thumbnailUrl}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground">
+                No image
+              </div>
+            )}
+          </div>
+          <dl className="flex-1 text-sm">
+            <DefinitionRow
+              term={dictionary.profilePage.createCourse.media.courseThumbnail}
+            >
+              {formData.thumbnailUrl ? "Uploaded" : "Not uploaded"}
+            </DefinitionRow>
+            <Separator className="opacity-60" />
+            <DefinitionRow
+              term={dictionary.profilePage.createCourse.media.promotionalVideo}
+            >
+              {formData.promoVideoUrl ? "Uploaded" : "Not uploaded"}
+            </DefinitionRow>
+          </dl>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section
+        eyebrow={t.pricingAndPromotions}
+        caption={
+          <span className="flex items-center gap-3 text-xs text-muted-foreground">
+            <EditLink
+              onClick={() => onEditStep(WIZARD_STEPS.PRICING)}
+              label={tActions.edit}
+            />
+          </span>
+        }
+      >
+        <dl>
+          <DefinitionRow term={t.priceTier}>
+            {formData.enrollmentType === "free"
+              ? dictionary.profilePage.createCourse.pricing.free
+              : `${formData.currency} ${formData.price.toFixed(2)}`}
+          </DefinitionRow>
+          <Separator className="opacity-60" />
+          <DefinitionRow term="Enrollment">
+            {formData.enrollmentType === "one-time-purchase"
+              ? dictionary.profilePage.createCourse.pricing.oneTimePurchase
+              : formData.enrollmentType === "subscription"
+                ? dictionary.profilePage.createCourse.pricing.subscription
+                : dictionary.profilePage.createCourse.pricing.free}
+          </DefinitionRow>
+          {formData.isPrivate ? (
+            <>
+              <Separator className="opacity-60" />
+              <DefinitionRow term="Visibility">Private</DefinitionRow>
+            </>
+          ) : null}
+          {formData.hasEnrollmentCap ? (
+            <>
+              <Separator className="opacity-60" />
+              <DefinitionRow term="Cap">
+                {formData.maxStudents} students
+              </DefinitionRow>
+            </>
+          ) : null}
+        </dl>
+      </Section>
+    </div>
+  )
+}
+
+function ChecklistItem({
+  label,
+  done,
+  onJump,
+  optional = false,
+}: {
+  label: string
+  done: boolean
+  onJump: () => void
+  optional?: boolean
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onJump}
+        className="group inline-flex items-center gap-2 outline-none focus-visible:underline focus-visible:underline-offset-4"
+      >
+        <span
+          className={cn(
+            "inline-flex size-4 items-center justify-center rounded-full border transition-colors",
+            done
+              ? "border-foreground bg-foreground text-background"
+              : "border-border bg-background text-muted-foreground"
+          )}
+          aria-hidden
+        >
+          {done ? <Check className="size-2.5" strokeWidth={3} /> : null}
+        </span>
+        <span
+          className={cn(
+            "text-xs transition-colors",
+            done
+              ? "font-medium text-foreground"
+              : "text-muted-foreground group-hover:text-foreground/80"
+          )}
+        >
+          {label}
+          {optional && !done ? (
+            <span className="ms-1 text-[0.6875rem] text-muted-foreground">
+              (optional)
+            </span>
+          ) : null}
+        </span>
+      </button>
+    </li>
+  )
+}
+
+function ModuleSummary({
   module,
   moduleIndex,
 }: {
@@ -87,35 +391,42 @@ function CurriculumModulePreview({
   const [isOpen, setIsOpen] = useState(true)
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="w-full">
-        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="border-b border-border last:border-b-0"
+    >
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 py-3 text-start"
+        >
           {isOpen ? (
             <ChevronDown className="size-4 text-muted-foreground" />
           ) : (
-            <ChevronRight className="size-4 text-muted-foreground" />
+            <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" />
           )}
-          <span className="font-medium text-sm">
-            Module {moduleIndex + 1}: {module.title}
+          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            {String(moduleIndex + 1).padStart(2, "0")}
           </span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {module.contents.length} item{module.contents.length !== 1 ? "s" : ""}
-          </Badge>
-        </div>
+          <span className="flex-1 truncate text-sm font-semibold text-foreground">
+            {module.title}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {module.contents.length}{" "}
+            {module.contents.length === 1 ? "item" : "items"}
+          </span>
+        </button>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="ml-7 mt-2 space-y-2">
+        <div className="ms-6 flex flex-col gap-0 border-s border-border ps-5 pb-4">
           {module.contents.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic pl-2">
-              No materials in this module
+            <p className="py-2 text-xs italic text-muted-foreground">
+              No materials in this module.
             </p>
           ) : (
-            module.contents.map((content, contentIndex) => (
-              <ContentItemPreview
-                key={content.id}
-                content={content}
-                contentIndex={contentIndex}
-              />
+            module.contents.map((content) => (
+              <ContentSummary key={content.id} content={content} />
             ))
           )}
         </div>
@@ -124,315 +435,63 @@ function CurriculumModulePreview({
   )
 }
 
-// Content item preview component
-function ContentItemPreview({
-  content,
-  contentIndex,
-}: {
-  content: CourseContent
-  contentIndex: number
-}) {
+function ContentSummary({ content }: { content: CourseContent }) {
   return (
-    <div className="flex items-start gap-3 p-3 border rounded-lg bg-background">
-      <div className="flex-shrink-0 mt-0.5">
-        {getContentTypeIcon(content.type)}
+    <div className="flex items-start gap-3 py-2">
+      <div className="mt-0.5">
+        <ContentTypeGlyph type={content.type} />
       </div>
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium truncate">{content.title}</span>
-          <Badge variant="outline" className="text-xs">
-            {getContentTypeLabel(content.type)}
-          </Badge>
-          {content.status === "draft" && (
-            <Badge variant="secondary" className="text-xs">
-              Draft
-            </Badge>
-          )}
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="text-sm font-medium text-foreground">
+            {content.title}
+          </span>
+          <span className="text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground">
+            {CONTENT_TYPE_LABEL[content.type]}
+          </span>
+          {content.status === "draft" ? (
+            <span className="text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground">
+              · Draft
+            </span>
+          ) : null}
         </div>
-
-        {/* Description */}
-        {content.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
+        {content.description ? (
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
             {content.description}
           </p>
-        )}
-
-        {/* URL/Link for video and link types */}
-        {(content.type === "video" || content.type === "link") && content.url && (
-          <div className="flex items-center gap-1 text-xs text-primary">
+        ) : null}
+        {(content.type === "video" || content.type === "link") && content.url ? (
+          <a
+            href={content.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex items-center gap-1 text-xs text-foreground underline-offset-4 hover:underline"
+          >
             <ExternalLink className="size-3" />
-            <a
-              href={content.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="truncate max-w-xs hover:underline"
-            >
-              {content.url}
-            </a>
-          </div>
-        )}
-
-        {/* Metadata badges */}
-        <div className="flex flex-wrap gap-2 mt-1">
-          {content.isFreePreview && (
-            <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-              <Eye className="size-3" />
-              <span>Free Preview</span>
-            </div>
-          )}
-          {content.allowDownloads && (
-            <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-              <Download className="size-3" />
-              <span>Downloads Allowed</span>
-            </div>
-          )}
-          {content.duration && content.duration > 0 && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="max-w-[20rem] truncate">{content.url}</span>
+          </a>
+        ) : null}
+        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-[0.6875rem] text-muted-foreground">
+          {content.isFreePreview ? (
+            <span className="inline-flex items-center gap-1">
+              <Eye className="size-3" /> Free preview
+            </span>
+          ) : null}
+          {content.allowDownloads ? (
+            <span className="inline-flex items-center gap-1">
+              <Download className="size-3" /> Downloads allowed
+            </span>
+          ) : null}
+          {content.duration && content.duration > 0 ? (
+            <span className="inline-flex items-center gap-1">
               <Clock className="size-3" />
-              <span>{content.duration} min</span>
-            </div>
-          )}
-          {content.points && content.points > 0 && (
-            <div className="text-xs text-orange-600 dark:text-orange-400">
-              {content.points} points
-            </div>
-          )}
-          {content.openInNewTab && content.type === "link" && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <ExternalLink className="size-3" />
-              <span>Opens in new tab</span>
-            </div>
-          )}
+              {content.duration} min
+            </span>
+          ) : null}
+          {content.points && content.points > 0 ? (
+            <span>{content.points} pts</span>
+          ) : null}
         </div>
-      </div>
-    </div>
-  )
-}
-
-export function ReviewStep({
-  dictionary,
-  formData,
-  onBack,
-  onPublish,
-  onEditStep,
-}: ReviewStepProps) {
-  const t = dictionary.profilePage.createCourse.review
-  const tActions = dictionary.profilePage.createCourse.actions
-
-  // Check completion status for each section
-  const basicInfoComplete = formData.title && formData.description
-  const curriculumComplete = formData.modules.length > 0
-  const mediaComplete = true // Simplified - media is optional
-  const pricingComplete =
-    formData.enrollmentType === "free" || formData.price > 0
-
-  const allChecksPass =
-    basicInfoComplete && curriculumComplete && mediaComplete && pricingComplete
-
-  const EditButton = ({ onClick }: { onClick: () => void }) => (
-    <Button
-      variant="ghost"
-      onClick={onClick}
-      className="flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors h-auto p-0 hover:bg-transparent"
-    >
-      <Pencil className="size-4" />
-      <span>{tActions.edit}</span>
-    </Button>
-  )
-
-  return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">{t.title}</h1>
-      </header>
-
-      {/* Success Alert */}
-      {allChecksPass && (
-        <Alert className="bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-300">
-          <CheckCircle className="size-4" />
-          <AlertDescription>{t.allChecksPassed}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
-        {/* Main Content */}
-        <main className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t.basicInformation}</CardTitle>
-              <EditButton onClick={() => onEditStep(WIZARD_STEPS.BASIC_INFO)} />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <p className="text-sm text-muted-foreground">
-                  {dictionary.profilePage.createCourse.basicInfo.courseTitle}
-                </p>
-                <p className="md:col-span-2 text-sm">
-                  {formData.title || "Not set"}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <p className="text-sm text-muted-foreground">{t.category}</p>
-                <p className="md:col-span-2 text-sm">
-                  {formData.category || "Not set"}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <p className="text-sm text-muted-foreground">
-                  {dictionary.profilePage.createCourse.basicInfo.targetAudience}
-                </p>
-                <p className="md:col-span-2 text-sm capitalize">
-                  {formData.level}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Curriculum Preview */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t.curriculum}</CardTitle>
-              <div className="flex items-center gap-4">
-                <p className="text-sm text-muted-foreground">
-                  {formData.modules.length} {t.sections},{" "}
-                  {formData.modules.reduce(
-                    (acc, m) => acc + m.contents.length,
-                    0
-                  )}{" "}
-                  {t.lectures}
-                </p>
-                <EditButton
-                  onClick={() => onEditStep(WIZARD_STEPS.CURRICULUM)}
-                />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {formData.modules.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">
-                  No modules added yet
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {formData.modules.map((module, moduleIndex) => (
-                    <CurriculumModulePreview
-                      key={module.id}
-                      module={module}
-                      moduleIndex={moduleIndex}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Course Media */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t.courseMedia}</CardTitle>
-              <EditButton onClick={() => onEditStep(WIZARD_STEPS.MEDIA)} />
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4">
-                <div className="w-40 h-24 bg-muted rounded-lg flex items-center justify-center text-xs text-muted-foreground">
-                  {formData.thumbnailUrl ? "Thumbnail" : "No thumbnail"}
-                </div>
-                <div>
-                  <p className="font-medium text-sm">
-                    {dictionary.profilePage.createCourse.media.courseThumbnail}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formData.thumbnailUrl ? "1920×1080 - JPG" : "Not uploaded"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pricing & Promotions */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t.pricingAndPromotions}</CardTitle>
-              <EditButton onClick={() => onEditStep(WIZARD_STEPS.PRICING)} />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <p className="text-sm text-muted-foreground">{t.priceTier}</p>
-                <p className="md:col-span-2 text-sm">
-                  {formData.enrollmentType === "free"
-                    ? dictionary.profilePage.createCourse.pricing.free
-                    : `$${formData.price.toFixed(2)} (${formData.currency})`}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <p className="text-sm text-muted-foreground">{t.promotions}</p>
-                <p className="md:col-span-2 text-sm">{t.noActivePromotions}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-
-        {/* Sidebar */}
-        <aside className="lg:col-span-1 mt-8 lg:mt-0">
-          <div className="sticky top-8 space-y-6">
-            {/* Readiness Checklist */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {t.readinessChecklist}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-center text-sm">
-                    <CheckCircle
-                      className={`size-5 me-2 ${basicInfoComplete
-                          ? "text-green-500"
-                          : "text-muted-foreground"
-                        }`}
-                    />
-                    <span>{t.basicInfoComplete}</span>
-                  </li>
-                  <li className="flex items-center text-sm">
-                    <CheckCircle
-                      className={`size-5 me-2 ${curriculumComplete
-                          ? "text-green-500"
-                          : "text-muted-foreground"
-                        }`}
-                    />
-                    <span>{t.curriculumAdded}</span>
-                  </li>
-                  <li className="flex items-center text-sm">
-                    <CheckCircle
-                      className={`size-5 me-2 ${mediaComplete
-                          ? "text-green-500"
-                          : "text-muted-foreground"
-                        }`}
-                    />
-                    <span>{t.mediaUploaded}</span>
-                  </li>
-                  <li className="flex items-center text-sm">
-                    <CheckCircle
-                      className={`size-5 me-2 ${pricingComplete
-                          ? "text-green-500"
-                          : "text-muted-foreground"
-                        }`}
-                    />
-                    <span>{t.pricingSet}</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            {/* <div className="flex flex-col gap-3">
-              <Button className="w-full" size="lg" onClick={onPublish}>
-                {t.publishCourse}
-              </Button>
-            </div> */}
-          </div>
-        </aside>
       </div>
     </div>
   )

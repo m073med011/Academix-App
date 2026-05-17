@@ -52,7 +52,7 @@ import { VerifyEmailForm } from "./verify-email-form"
 
 const TOTAL_STEPS = 5
 
-export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
+export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: DictionaryType; onSwitchToSignIn?: () => void }) {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -151,9 +151,13 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
         return
       }
 
-      // If no verification needed, go to sign-in
+      // If no verification needed, go to auth page
       toast({ title: dictionary.auth.register.registrationSuccessful })
-      router.push(ensureLocalizedPathname("/sign-in", locale))
+      if (onSwitchToSignIn) {
+        onSwitchToSignIn()
+      } else {
+        router.push(ensureLocalizedPathname("/auth", locale))
+      }
     } catch (error) {
       if (error instanceof ApiClientError) {
         // Handle validation errors
@@ -454,17 +458,22 @@ export function RegisterForm({ dictionary }: { dictionary: DictionaryType }) {
         {/* Footer Links */}
         <div className="text-center text-sm">
           {t.haveAccount}{" "}
-          <Link
-            href={ensureLocalizedPathname(
-              redirectPathname
-                ? ensureRedirectPathname("/sign-in", redirectPathname)
-                : "/sign-in",
-              locale
-            )}
-            className="underline"
-          >
-            {t.signIn}
-          </Link>
+          {onSwitchToSignIn ? (
+            <button
+              type="button"
+              onClick={onSwitchToSignIn}
+              className="underline"
+            >
+              {t.signIn}
+            </button>
+          ) : (
+            <Link
+              href={ensureLocalizedPathname("/auth", locale)}
+              className="underline"
+            >
+              {t.signIn}
+            </Link>
+          )}
         </div>
         <SeparatorWithText>{t.orContinue}</SeparatorWithText>
         <OAuthLinks dictionary={dictionary} />

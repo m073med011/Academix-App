@@ -5,17 +5,9 @@ import { Calendar, Users } from "lucide-react"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { CourseFormData } from "../../types"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { cn } from "@/lib/utils"
+
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -23,7 +15,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
+
+import { Field, Section } from "../wizard-shell"
 
 interface PricingStepProps {
   dictionary: DictionaryType
@@ -37,51 +32,72 @@ export function PricingStep({
   dictionary,
   formData,
   onUpdate,
-  onNext,
-  onBack,
 }: PricingStepProps) {
   const t = dictionary.profilePage.createCourse.pricing
-  const tActions = dictionary.profilePage.createCourse.actions
 
   const enrollmentTypes = [
-    { value: "free", label: t.free },
-    { value: "subscription", label: t.subscription },
-    { value: "one-time-purchase", label: t.oneTimePurchase },
-  ] as const
+    {
+      value: "free" as const,
+      label: t.free,
+      caption: "Open to anyone, no payment.",
+    },
+    {
+      value: "one-time-purchase" as const,
+      label: t.oneTimePurchase,
+      caption: "Single payment for lifetime access.",
+    },
+    {
+      value: "subscription" as const,
+      label: t.subscription,
+      caption: "Recurring billing while enrolled.",
+    },
+  ]
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Page Heading */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">
-          {t.title}
-        </h1>
-        <p className="text-muted-foreground">{t.description}</p>
-      </div>
-
-      {/* Enrollment Type Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.enrollmentType}</CardTitle>
-          <CardDescription>{t.enrollmentTypeDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-10 w-full max-w-sm items-center rounded-lg bg-muted p-1">
-            {enrollmentTypes.map((type) => (
+    <div className="flex flex-col gap-10">
+      <Section
+        eyebrow="Enrollment"
+        caption="How students gain access. This decides whether a price applies."
+      >
+        <fieldset className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <legend className="sr-only">{t.enrollmentType}</legend>
+          {enrollmentTypes.map((type) => {
+            const checked = formData.enrollmentType === type.value
+            return (
               <label
                 key={type.value}
-                className={`flex h-full grow cursor-pointer items-center justify-center overflow-hidden rounded-md px-3 text-sm font-medium transition-colors ${
-                  formData.enrollmentType === type.value
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={cn(
+                  "flex h-full cursor-pointer items-start gap-3 rounded-md border bg-background p-4 transition-colors",
+                  checked
+                    ? "border-foreground"
+                    : "border-border hover:border-foreground/40"
+                )}
               >
-                <span className="truncate">{type.label}</span>
+                <span
+                  className={cn(
+                    "mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+                    checked
+                      ? "border-foreground"
+                      : "border-muted-foreground/40"
+                  )}
+                >
+                  {checked ? (
+                    <span className="size-2 rounded-full bg-foreground" />
+                  ) : null}
+                </span>
+                <span className="flex flex-1 flex-col gap-0.5">
+                  <span className="text-sm font-medium text-foreground">
+                    {type.label}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {type.caption}
+                  </span>
+                </span>
                 <input
                   type="radio"
                   name="enrollment-type"
                   value={type.value}
-                  checked={formData.enrollmentType === type.value}
+                  checked={checked}
                   onChange={(e) =>
                     onUpdate({
                       enrollmentType: e.target
@@ -91,108 +107,114 @@ export function PricingStep({
                   className="sr-only"
                 />
               </label>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            )
+          })}
+        </fieldset>
+      </Section>
 
-      {/* Pricing Section - Only show for paid courses */}
-      {formData.enrollmentType !== "free" && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <CardTitle>{t.pricingSection}</CardTitle>
-              <Badge variant="secondary" className="bg-primary/20 text-primary">
-                {formData.enrollmentType === "one-time-purchase"
-                  ? t.oneTimePurchase
-                  : t.subscription}
-              </Badge>
-            </div>
-            <CardDescription>{t.priceDescription}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full max-w-xs">
-              <Label htmlFor="course-price">{t.coursePrice}</Label>
-              <div className="relative mt-2">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-                  $
-                </span>
-                <Input
-                  id="course-price"
-                  type="number"
-                  placeholder="99.99"
-                  value={formData.price || ""}
-                  onChange={(e) =>
-                    onUpdate({ price: parseFloat(e.target.value) || 0 })
-                  }
-                  className="pl-7 pr-16"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center">
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(value) => onUpdate({ currency: value })}
-                  >
-                    <SelectTrigger className="h-full rounded-l-none border-0 border-l bg-transparent w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="CAD">CAD</SelectItem>
-                    </SelectContent>
-                  </Select>
+      {formData.enrollmentType !== "free" ? (
+        <>
+          <Separator />
+          <Section
+            eyebrow="Price"
+            caption={
+              formData.enrollmentType === "one-time-purchase"
+                ? "Single payment; access never expires."
+                : "Recurring charge while the subscription is active."
+            }
+          >
+            <div className="flex max-w-sm flex-col gap-2">
+              <Field label={t.coursePrice} htmlFor="course-price">
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 inline-flex items-center text-sm text-muted-foreground start-3">
+                    $
+                  </span>
+                  <Input
+                    id="course-price"
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="99.99"
+                    value={formData.price || ""}
+                    onChange={(e) =>
+                      onUpdate({ price: parseFloat(e.target.value) || 0 })
+                    }
+                    className="ps-7 pe-20"
+                  />
+                  <div className="absolute inset-y-0 end-0 flex items-center">
+                    <Select
+                      value={formData.currency}
+                      onValueChange={(value) => onUpdate({ currency: value })}
+                    >
+                      <SelectTrigger className="h-full w-20 rounded-s-none border-0 border-s bg-transparent">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                        <SelectItem value="CAD">CAD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
+              </Field>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </Section>
+        </>
+      ) : null}
 
-      {/* Access Restrictions Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.accessRestrictions}</CardTitle>
-          <CardDescription>{t.accessRestrictionsDescription}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Private Course Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col">
-              <Label htmlFor="private-course">{t.privateCourse}</Label>
-              <span className="text-sm text-muted-foreground">
-                {t.privateCourseDescription}
-              </span>
-            </div>
-            <Switch
-              id="private-course"
-              checked={formData.isPrivate}
-              onCheckedChange={(checked) => onUpdate({ isPrivate: checked })}
-            />
+      <Separator />
+
+      <Section
+        eyebrow="Access"
+        caption="Optional restrictions on who can enroll and when."
+      >
+        <div className="flex items-start justify-between gap-6 py-1">
+          <div className="flex flex-col">
+            <label
+              htmlFor="private-course"
+              className="text-sm font-medium text-foreground"
+            >
+              {t.privateCourse}
+            </label>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t.privateCourseDescription}
+            </p>
           </div>
+          <Switch
+            id="private-course"
+            checked={formData.isPrivate}
+            onCheckedChange={(checked) => onUpdate({ isPrivate: checked })}
+          />
+        </div>
 
-          {/* Enrollment Cap Toggle */}
-          <div className="flex items-start justify-between">
-            <div className="flex flex-col">
-              <Label htmlFor="enrollment-cap">{t.enrollmentCap}</Label>
-              <span className="text-sm text-muted-foreground">
-                {t.enrollmentCapDescription}
-              </span>
-            </div>
-            <Switch
-              id="enrollment-cap"
-              checked={formData.hasEnrollmentCap}
-              onCheckedChange={(checked) =>
-                onUpdate({ hasEnrollmentCap: checked })
-              }
-            />
+        <Separator className="opacity-60" />
+
+        <div className="flex items-start justify-between gap-6 py-1">
+          <div className="flex flex-col">
+            <label
+              htmlFor="enrollment-cap"
+              className="text-sm font-medium text-foreground"
+            >
+              {t.enrollmentCap}
+            </label>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t.enrollmentCapDescription}
+            </p>
           </div>
+          <Switch
+            id="enrollment-cap"
+            checked={formData.hasEnrollmentCap}
+            onCheckedChange={(checked) =>
+              onUpdate({ hasEnrollmentCap: checked })
+            }
+          />
+        </div>
 
-          {/* Max Students Input - Only show when enrollment cap is enabled */}
-          {formData.hasEnrollmentCap && (
-            <div className="w-full max-w-xs">
-              <Label htmlFor="max-students">{t.maxStudents}</Label>
-              <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        {formData.hasEnrollmentCap ? (
+          <div className="max-w-xs">
+            <Field label={t.maxStudents} htmlFor="max-students">
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 flex items-center start-3">
                   <Users className="size-4 text-muted-foreground" />
                 </div>
                 <Input
@@ -203,51 +225,56 @@ export function PricingStep({
                   onChange={(e) =>
                     onUpdate({ maxStudents: parseInt(e.target.value) || 100 })
                   }
-                  className="pl-10"
+                  className="ps-10"
                 />
               </div>
-            </div>
-          )}
-
-          {/* Enrollment Period */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="start-date">{t.enrollmentStartDate}</Label>
-              <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Calendar className="size-4 text-muted-foreground" />
-                </div>
-                <Input
-                  id="start-date"
-                  type="date"
-                  value={formData.enrollmentStartDate || ""}
-                  onChange={(e) =>
-                    onUpdate({ enrollmentStartDate: e.target.value })
-                  }
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="end-date">{t.enrollmentEndDate}</Label>
-              <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Calendar className="size-4 text-muted-foreground" />
-                </div>
-                <Input
-                  id="end-date"
-                  type="date"
-                  value={formData.enrollmentEndDate || ""}
-                  onChange={(e) =>
-                    onUpdate({ enrollmentEndDate: e.target.value })
-                  }
-                  className="pl-10"
-                />
-              </div>
-            </div>
+            </Field>
           </div>
-        </CardContent>
-      </Card>
+        ) : null}
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <Field
+            label={t.enrollmentStartDate}
+            htmlFor="start-date"
+            hint="Optional. Defaults to today."
+          >
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 flex items-center start-3">
+                <Calendar className="size-4 text-muted-foreground" />
+              </div>
+              <Input
+                id="start-date"
+                type="date"
+                value={formData.enrollmentStartDate || ""}
+                onChange={(e) =>
+                  onUpdate({ enrollmentStartDate: e.target.value })
+                }
+                className="ps-10"
+              />
+            </div>
+          </Field>
+          <Field
+            label={t.enrollmentEndDate}
+            htmlFor="end-date"
+            hint="Optional. Leave blank for open enrollment."
+          >
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 flex items-center start-3">
+                <Calendar className="size-4 text-muted-foreground" />
+              </div>
+              <Input
+                id="end-date"
+                type="date"
+                value={formData.enrollmentEndDate || ""}
+                onChange={(e) =>
+                  onUpdate({ enrollmentEndDate: e.target.value })
+                }
+                className="ps-10"
+              />
+            </div>
+          </Field>
+        </div>
+      </Section>
     </div>
   )
 }

@@ -53,11 +53,9 @@ export default function OrganizationsView({
   }, [])
 
   const handleCreateSuccess = () => {
-    // Small delay to let the backend commit the new membership before refetching
     setTimeout(() => fetchOrganizations(true), 800)
   }
 
-  // Filter out memberships where organizationId is null or unpopulated (backend bug)
   const validMemberships = memberships.filter(
     (m) => m.organizationId !== null && typeof m.organizationId === "object"
   )

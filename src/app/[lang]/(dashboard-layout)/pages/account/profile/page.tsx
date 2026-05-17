@@ -24,7 +24,7 @@ export default async function ProfilePage(props: {
   const context = await getAuthenticatedContext()
 
   if (!context) {
-    redirect("/sign-in")
+    redirect("/auth")
   }
 
   const { getProfile } = await serverUserService(context.accessToken)

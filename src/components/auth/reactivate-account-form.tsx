@@ -169,7 +169,7 @@ export function ReactivateAccountForm({
       })
 
       if (signInResult?.error) {
-        router.push(ensureLocalizedPathname("/sign-in", locale))
+        router.push(ensureLocalizedPathname("/auth", locale))
         return
       }
 
@@ -396,7 +396,7 @@ export function ReactivateAccountForm({
             type="button"
             onClick={async () => {
               await signOut({ redirect: false })
-              router.push(ensureLocalizedPathname("/sign-in", locale))
+              router.push(ensureLocalizedPathname("/auth", locale))
             }}
             className="underline"
           >

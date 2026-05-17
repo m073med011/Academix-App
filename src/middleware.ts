@@ -116,7 +116,7 @@ export async function middleware(request: NextRequest) {
 
     // Redirect unauthenticated users from protected routes to sign-in
     if (!isAuthenticated && isProtected) {
-      let redirectPathname = "/sign-in"
+      let redirectPathname = "/auth"
 
       // Maintain the original path and query for redirection
       if (pathnameWithoutLocale !== "") {
@@ -126,8 +126,8 @@ export async function middleware(request: NextRequest) {
       }
 
       // We use NextResponse.redirect directly here instead of the custom redirect() helper
-      // to avoid merging the current nextUrl.search onto the /sign-in URL, which would
-      // result in messy duplicate params like /sign-in?redirectTo=...&tab=...
+      // to avoid merging the current nextUrl.search onto the /auth URL, which would
+      // result in messy duplicate params like /auth?redirectTo=...&tab=...
       const redirectUrl = new URL(
         isPathnameMissingLocale(redirectPathname)
           ? ensureLocalizedPathname(redirectPathname, getPreferredLocale(request))

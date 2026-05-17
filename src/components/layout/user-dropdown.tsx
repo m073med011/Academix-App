@@ -91,7 +91,7 @@ export function UserDropdown({
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut({ callbackUrl: ensureLocalizedPathname("/sign-in", locale) })}>
+        <DropdownMenuItem onClick={() => signOut({ callbackUrl: ensureLocalizedPathname("/auth", locale) })}>
           <LogOut className="me-2 size-4" />
           {dictionary.navigation.userNav.signOut}
         </DropdownMenuItem>

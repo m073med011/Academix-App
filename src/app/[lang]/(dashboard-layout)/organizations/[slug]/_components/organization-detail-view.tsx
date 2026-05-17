@@ -9,7 +9,6 @@ import { useRole } from "@/hooks/use-role"
 
 import { CardWithUnderlineTabs } from "@/app/[lang]/(dashboard-layout)/(design-system)/cards/basic/_components/card-with-underline-tabs"
 import { CoursesTab } from "./courses-tab"
-import { OrganizationHeader } from "./organization-header"
 import { PlaceholderTab } from "./placeholder-tab"
 import { AboutTab } from "./about-tab"
 
@@ -165,13 +164,7 @@ export default function OrganizationDetailView({
 
   return (
     <div className="container space-y-6 p-4 md:p-6">
-      <OrganizationHeader
-        dictionary={{
-          addNewCourse: dict.courses.addNewCourse,
-        }}
-        organization={organization}
-        onAddCourse={handleAddCourse}
-      />
+     
 
       <CardWithUnderlineTabs 
         tabs={organizationTabs} 

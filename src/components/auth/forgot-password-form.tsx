@@ -90,10 +90,10 @@ export function ForgotPasswordForm({
         </ButtonLoading>
         <Link
           href={ensureLocalizedPathname(
-            // Include redirect pathname if available, otherwise default to "/sign-in"
+            // Include redirect pathname if available, otherwise default to "/auth"
             redirectPathname
-              ? ensureRedirectPathname("/sign-in", redirectPathname)
-              : "/sign-in",
+              ? ensureRedirectPathname("/auth", redirectPathname)
+              : "/auth",
             locale
           )}
           className="-mt-4 text-center text-sm underline"

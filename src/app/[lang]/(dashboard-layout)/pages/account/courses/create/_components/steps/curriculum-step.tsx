@@ -1,13 +1,18 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState } from "react"
+import { DragDropContext, Droppable } from "@hello-pangea/dnd"
+import type { DropResult } from "@hello-pangea/dnd"
 import {
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
+  ClipboardList,
   FileText,
   GripVertical,
+  HelpCircle,
+  Link as LinkIcon,
   Loader2,
-  MoreVertical,
+  MoreHorizontal,
   Pencil,
   PlayCircle,
   Plus,
@@ -20,7 +25,11 @@ import type { CourseContent, CourseFormData, CourseModule } from "../../types"
 import { cn } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +38,27 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { SortableList } from "@/components/ui/sortable-list"
-import { ScrollArea } from "@/components/ui/scroll-area"
+
+import { Section } from "../wizard-shell"
 import { AddContentModal } from "./add-content-modal"
+
+// Droppable id helpers. Keeping the prefixes in one place avoids string-drift
+// between the renderers and the onDragEnd router.
+const MODULES_DROPPABLE_ID = "curriculum:modules"
+const CONTENT_DROPPABLE_PREFIX = "curriculum:contents:"
+const COLLAPSED_HEADER_PREFIX = "curriculum:module-header:"
+const contentDroppableId = (moduleId: string) =>
+  `${CONTENT_DROPPABLE_PREFIX}${moduleId}`
+const collapsedHeaderDroppableId = (moduleId: string) =>
+  `${COLLAPSED_HEADER_PREFIX}${moduleId}`
+const moduleIdFromContentDroppable = (id: string) =>
+  id.startsWith(CONTENT_DROPPABLE_PREFIX)
+    ? id.slice(CONTENT_DROPPABLE_PREFIX.length)
+    : null
+const moduleIdFromCollapsedHeader = (id: string) =>
+  id.startsWith(COLLAPSED_HEADER_PREFIX)
+    ? id.slice(COLLAPSED_HEADER_PREFIX.length)
+    : null
 
 interface CurriculumStepProps {
   dictionary: DictionaryType
@@ -40,104 +68,108 @@ interface CurriculumStepProps {
   onBack: () => void
 }
 
+const CONTENT_TYPE_LABEL: Record<CourseContent["type"], string> = {
+  video: "Video",
+  text: "Article",
+  quiz: "Quiz",
+  assignment: "Assignment",
+  link: "Link",
+}
+
+function ContentTypeGlyph({ type }: { type: CourseContent["type"] }) {
+  // Monochrome by design: DESIGN.md confines accent / chart colors out of UI
+  // chrome. The glyph alone carries the content-type signal.
+  const common = "size-4 text-muted-foreground"
+  switch (type) {
+    case "video":
+      return <PlayCircle className={common} aria-hidden />
+    case "quiz":
+      return <HelpCircle className={common} aria-hidden />
+    case "assignment":
+      return <ClipboardList className={common} aria-hidden />
+    case "link":
+      return <LinkIcon className={common} aria-hidden />
+    case "text":
+    default:
+      return <FileText className={common} aria-hidden />
+  }
+}
+
 export function CurriculumStep({
   dictionary,
   formData,
   onUpdate,
-  onNext,
-  onBack,
 }: CurriculumStepProps) {
   const t = dictionary.profilePage.createCourse.curriculum
   const tActions = dictionary.profilePage.createCourse.actions
 
-  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(
-    formData.modules[0]?.id || null
-  )
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false)
+  const [targetModuleId, setTargetModuleId] = useState<string | null>(null)
   const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null)
 
-  // Edit state
+  // Inline edit state for module title
   const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState("")
   const [editingContent, setEditingContent] = useState<CourseContent | null>(
     null
   )
 
-  // Demo data for initial state
-  const [modules, setModules] = useState<CourseModule[]>(formData.modules)
+  const modules = formData.modules
 
-  const selectedModule = modules.find((m) => m.id === selectedModuleId)
-
-  const toggleModuleExpansion = (moduleId: string) => {
-    if (editingModuleId === moduleId) return // Prevent expansion toggle while editing
-    const newModules = modules.map((m) =>
-      m.id === moduleId ? { ...m, isExpanded: !m.isExpanded } : m
-    )
-    setModules(newModules)
-    onUpdate({ modules: newModules })
-    setSelectedModuleId(moduleId)
-  }
+  const setModules = (next: CourseModule[]) => onUpdate({ modules: next })
 
   const handleAddModule = () => {
     const newModule: CourseModule = {
       id: crypto.randomUUID(),
-      title: `Module ${modules.length + 1}: New Module`,
-      isExpanded: false,
+      title: `Module ${modules.length + 1}`,
+      isExpanded: true,
       contents: [],
     }
-    const newModules = [...modules, newModule]
-    setModules(newModules)
-    onUpdate({ modules: newModules })
-    
-    // Auto-focus the new module
-    setSelectedModuleId(newModule.id)
+    setModules([...modules, newModule])
     setEditingModuleId(newModule.id)
     setEditingTitle(newModule.title)
   }
 
-  const handleEditModule = (module: CourseModule) => {
-    setEditingModuleId(module.id)
-    setEditingTitle(module.title)
-  }
-
   const handleSaveModuleTitle = () => {
     if (!editingModuleId) return
-
-    const newModules = modules.map((m) =>
-      m.id === editingModuleId ? { ...m, title: editingTitle } : m
+    setModules(
+      modules.map((m) =>
+        m.id === editingModuleId
+          ? { ...m, title: editingTitle.trim() || m.title }
+          : m
+      )
     )
-    setModules(newModules)
-    onUpdate({ modules: newModules })
-    setEditingModuleId(null)
-    setEditingTitle("")
-  }
-
-  const handleCancelEdit = () => {
     setEditingModuleId(null)
     setEditingTitle("")
   }
 
   const handleDeleteModule = (moduleId: string) => {
-    const newModules = modules.filter((m) => m.id !== moduleId)
-    setModules(newModules)
-    onUpdate({ modules: newModules })
-
-    if (selectedModuleId === moduleId) {
-      setSelectedModuleId(newModules[0]?.id || null)
-    }
+    setModules(modules.filter((m) => m.id !== moduleId))
   }
 
-  const handleEditContent = (content: CourseContent) => {
+  const handleToggleModule = (moduleId: string) => {
+    setModules(
+      modules.map((m) =>
+        m.id === moduleId ? { ...m, isExpanded: !m.isExpanded } : m
+      )
+    )
+  }
+
+  const handleEditContent = (moduleId: string, content: CourseContent) => {
+    setTargetModuleId(moduleId)
     setEditingContent(content)
     setIsAddContentModalOpen(true)
   }
 
-  const removeLesson = async (contentId: string) => {
-    if (!selectedModuleId) return
-    setDeletingLessonId(contentId)
+  const handleOpenAddContent = (moduleId: string) => {
+    setTargetModuleId(moduleId)
+    setEditingContent(null)
+    setIsAddContentModalOpen(true)
+  }
 
-    // Find the content to verify if we need to delete files
-    const module = modules.find((m) => m.id === selectedModuleId)
+  const removeLesson = async (moduleId: string, contentId: string) => {
+    setDeletingLessonId(contentId)
+    const module = modules.find((m) => m.id === moduleId)
     const content = module?.contents.find((c) => c.id === contentId)
 
     if (content?.url) {
@@ -147,311 +179,257 @@ export function CurriculumStep({
         )
         const publicId = extractPublicId(content.url)
         if (publicId) {
-          // Determine resource type
           let resourceType: "video" | "image" | "raw" = "image"
-          if (content.type === "video") {
-            resourceType = "video"
-          } else if (content.url.match(/\.(pdf|doc|docx|zip|rar)$/i)) {
+          if (content.type === "video") resourceType = "video"
+          else if (content.url.match(/\.(pdf|doc|docx|zip|rar)$/i))
             resourceType = "raw"
-          }
-          
           await deleteFromCloudinary(publicId, resourceType)
         }
       } catch (error) {
         console.error("Failed to delete file from Cloudinary:", error)
-        // We continue with local deletion even if remote fails
       }
     }
 
-    const newModules = modules.map((m) =>
-      m.id === selectedModuleId
-        ? { ...m, contents: m.contents.filter((c) => c.id !== contentId) }
-        : m
+    setModules(
+      modules.map((m) =>
+        m.id === moduleId
+          ? { ...m, contents: m.contents.filter((c) => c.id !== contentId) }
+          : m
+      )
     )
-    setModules(newModules)
-    onUpdate({ modules: newModules })
     setDeletingLessonId(null)
   }
 
-  const getContentIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return <PlayCircle className="size-5 text-primary" />
-      case "text": // Changed from "article"
-      case "article": // Legacy support
-        return <FileText className="size-5 text-purple-400" />
-      case "quiz":
-        return <FileText className="size-5 text-orange-400" />
-      default:
-        return <FileText className="size-5 text-blue-400" />
+  const handleModalAddContent = (type: string, data: any) => {
+    if (!targetModuleId) return
+
+    const mapDataToContent = (
+      id: string,
+      status: "draft" | "published"
+    ): CourseContent => ({
+      id,
+      type: type as CourseContent["type"],
+      title: data.title,
+      status,
+      description: data.description,
+      url: data.videoUrl || data.url,
+      isFreePreview: data.isFreePreview,
+      allowDownloads: data.allowDownloads,
+      content: data.content,
+      duration: data.readTime || data.duration || 0,
+      thumbnailUrl: data.thumbnailUrl,
+      points: data.points,
+      dueDate: data.dueDate?.toISOString(),
+      submissionTypes: data.submissionTypes,
+      allowLate: data.allowLate,
+      assignmentFileUrl: data.assignmentFileUrl,
+      quizQuestions: data.quizQuestions,
+      openInNewTab:
+        data.openInNewTab === "new_tab" || data.openInNewTab === true,
+      questions: type === "quiz" ? 0 : undefined,
+    })
+
+    if (editingContent && data.id) {
+      const updated = mapDataToContent(data.id, editingContent.status)
+      setModules(
+        modules.map((m) =>
+          m.id === targetModuleId
+            ? {
+                ...m,
+                contents: m.contents.map((c) =>
+                  c.id === data.id ? updated : c
+                ),
+              }
+            : m
+        )
+      )
+    } else {
+      const newContent = mapDataToContent(crypto.randomUUID(), "draft")
+      setModules(
+        modules.map((m) =>
+          m.id === targetModuleId
+            ? { ...m, contents: [...m.contents, newContent] }
+            : m
+        )
+      )
     }
   }
 
-  const handleModalAddContent = (type: string, data: any) => {
-    if (!selectedModuleId) return
+  const totalLessons = modules.reduce((acc, m) => acc + m.contents.length, 0)
 
-    // Common mapping logic
-    const mapDataToContent = (id: string, status: "draft" | "published"): CourseContent => ({
-        id,
-        type: type as CourseContent["type"],
-        title: data.title,
-        status,
-        description: data.description,
-        // Video fields
-        url: data.videoUrl || data.url,
-        isFreePreview: data.isFreePreview,
-        allowDownloads: data.allowDownloads,
-        // Article/Text fields
-        content: data.content,
-        duration: data.readTime || data.duration || 0,
-        thumbnailUrl: data.thumbnailUrl, // Added
-        // Assignment fields
-        points: data.points,
-        dueDate: data.dueDate?.toISOString(),
-        submissionTypes: data.submissionTypes,
-        allowLate: data.allowLate,
-        assignmentFileUrl: data.assignmentFileUrl, // Added
-        // Quiz fields
-        quizQuestions: data.quizQuestions, // Added
-        // Link fields
-        openInNewTab: data.openInNewTab === "new_tab" || data.openInNewTab === true,
-        // Legacy
-        questions: type === "quiz" ? 0 : undefined,
-    })
+  /**
+   * Single onDragEnd router for everything in the curriculum tree.
+   * Three drop semantics live here:
+   *   1. type "module"  — reorder the modules list.
+   *   2. type "content", same droppable — reorder a module's contents.
+   *   3. type "content", different droppable — move a content item between
+   *      modules; if the target is a collapsed-header zone, append to that
+   *      module and auto-expand it.
+   * Drops outside any droppable, or self-drops, are no-ops.
+   */
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination, type } = result
+    if (!destination) return
 
-    // Check if we're editing an existing content
-    if (editingContent && data.id) {
-      const updatedContent = mapDataToContent(data.id, editingContent.status)
+    // Modules: simple in-place reorder.
+    if (type === "module") {
+      if (source.index === destination.index) return
+      const next = Array.from(modules)
+      const [moved] = next.splice(source.index, 1)
+      next.splice(destination.index, 0, moved)
+      setModules(next)
+      return
+    }
 
-      const newModules = modules.map((m) =>
-        m.id === selectedModuleId
-          ? {
-              ...m,
-              contents: m.contents.map((c) =>
-                c.id === data.id ? updatedContent : c
-              ),
+    // Content moves.
+    if (type === "content") {
+      const sourceModuleId = moduleIdFromContentDroppable(source.droppableId)
+      if (!sourceModuleId) return
+
+      // Drop on a collapsed module's header — append + auto-expand.
+      const collapsedTargetModuleId = moduleIdFromCollapsedHeader(
+        destination.droppableId
+      )
+      if (collapsedTargetModuleId) {
+        if (collapsedTargetModuleId === sourceModuleId) return // no-op
+        const sourceModule = modules.find((m) => m.id === sourceModuleId)
+        if (!sourceModule) return
+        const movedItem = sourceModule.contents[source.index]
+        if (!movedItem) return
+        setModules(
+          modules.map((m) => {
+            if (m.id === sourceModuleId) {
+              return {
+                ...m,
+                contents: m.contents.filter((_, i) => i !== source.index),
+              }
             }
-          : m
-      )
-      setModules(newModules)
-      onUpdate({ modules: newModules })
-    } else {
-      // Creating new content
-      const newContent = mapDataToContent(crypto.randomUUID(), "draft")
+            if (m.id === collapsedTargetModuleId) {
+              return {
+                ...m,
+                isExpanded: true,
+                contents: [...m.contents, movedItem],
+              }
+            }
+            return m
+          })
+        )
+        return
+      }
 
-      const newModules = modules.map((m) =>
-        m.id === selectedModuleId
-          ? { ...m, contents: [...m.contents, newContent] }
-          : m
+      const destinationModuleId = moduleIdFromContentDroppable(
+        destination.droppableId
       )
-      setModules(newModules)
-      onUpdate({ modules: newModules })
+      if (!destinationModuleId) return
+
+      // Same module — local reorder.
+      if (sourceModuleId === destinationModuleId) {
+        if (source.index === destination.index) return
+        setModules(
+          modules.map((m) => {
+            if (m.id !== sourceModuleId) return m
+            const nextContents = Array.from(m.contents)
+            const [moved] = nextContents.splice(source.index, 1)
+            nextContents.splice(destination.index, 0, moved)
+            return { ...m, contents: nextContents }
+          })
+        )
+        return
+      }
+
+      // Cross-module move.
+      const sourceModule = modules.find((m) => m.id === sourceModuleId)
+      if (!sourceModule) return
+      const movedItem = sourceModule.contents[source.index]
+      if (!movedItem) return
+      setModules(
+        modules.map((m) => {
+          if (m.id === sourceModuleId) {
+            return {
+              ...m,
+              contents: m.contents.filter((_, i) => i !== source.index),
+            }
+          }
+          if (m.id === destinationModuleId) {
+            const nextContents = Array.from(m.contents)
+            nextContents.splice(destination.index, 0, movedItem)
+            return { ...m, contents: nextContents }
+          }
+          return m
+        })
+      )
     }
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <header className="flex flex-col gap-4">
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">
-            {t.title}
-          </h1>
-          <div className="flex items-center gap-2"></div>
+    <div className="flex flex-col gap-10">
+      <Section
+        eyebrow="Structure"
+        caption="A course is a sequence of modules; a module is a sequence of materials. Drag to reorder within a module, or across to move materials between modules."
+      >
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">
+            {modules.length === 0
+              ? "No modules yet."
+              : `${modules.length} ${modules.length === 1 ? "module" : "modules"} · ${totalLessons} ${totalLessons === 1 ? "item" : "items"}`}
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleAddModule}
+          >
+            <Plus className="size-4" />
+            {t.addNewModule}
+          </Button>
         </div>
-      </header>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[500px]">
-        {/* Left Panel: Modules */}
-        <Card className="lg:col-span-1">
-          <CardHeader className="pb-4">
-            <h3 className="text-lg font-bold">{t.modules}</h3>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <ScrollArea className="h-[500px] pr-4">
+        {modules.length === 0 ? (
+          <EmptyModules onAdd={handleAddModule} />
+        ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="flex flex-col">
               <SortableList
                 items={modules}
-                onReorder={(newModules) => {
-                  setModules(newModules)
-                  onUpdate({ modules: newModules })
-                }}
-                renderItem={(module) => (
-                  <div
-                    className={cn(
-                      "rounded-lg p-3 cursor-pointer transition-colors mb-2 group",
-                      selectedModuleId === module.id
-                        ? "bg-primary/10 border border-primary/50"
-                        : "hover:bg-muted/50 border border-transparent"
-                    )}
-                    onClick={() => toggleModuleExpansion(module.id)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <GripVertical className="size-4 text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0" />
-                        {editingModuleId === module.id ? (
-                          <Input
-                            value={editingTitle}
-                            onChange={(e) => setEditingTitle(e.target.value)}
-                            onBlur={handleSaveModuleTitle}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleSaveModuleTitle()
-                              if (e.key === "Escape") {
-                                setEditingModuleId(null)
-                                setEditingTitle("")
-                              }
-                            }}
-                            autoFocus
-                            className="h-7 text-sm"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <span className="font-medium text-sm truncate">
-                            {module.title}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {editingModuleId !== module.id && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreVertical className="size-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleEditModule(module)
-                                }}
-                              >
-                                <Pencil className="mr-2 size-4" />
-                                {tActions?.edit || "Edit"}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleDeleteModule(module.id)
-                                }}
-                              >
-                                <Trash2 className="mr-2 size-4" />
-                                {(tActions as any)?.delete || "Delete"}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                        {module.isExpanded ? (
-                          <ChevronUp className="size-4 flex-shrink-0" />
-                        ) : (
-                          <ChevronDown className="size-4 flex-shrink-0" />
-                        )}
-                      </div>
-                    </div>
-                    {module.isExpanded && (
-                      <p className="text-xs text-muted-foreground mt-2 ps-6">
-                        {module.contents.length} {t.lesson.toLowerCase()}s
-                      </p>
-                    )}
-                  </div>
-                )}
-              />
-            </ScrollArea>
-            <Button
-              variant="secondary"
-              className="w-full mt-2"
-              onClick={handleAddModule}
-            >
-              {t.addNewModule}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Right Panel: Content Canvas */}
-        <Card className="lg:col-span-3">
-          <CardHeader className="pb-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">
-                {selectedModule?.title || "Select a module"}
-              </h2>
-              <Button
-                size="sm"
-                onClick={() => setIsAddContentModalOpen(true)}
-                disabled={!selectedModuleId}
-              >
-                <Plus className="size-4" />
-                {t.addContent}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[500px] pr-4">
-              <div className="space-y-3">
-                {selectedModule && (
-                  <SortableList
-                    items={selectedModule.contents}
-                    onReorder={(newContents) => {
-                      const newModules = modules.map((m) =>
-                        m.id === selectedModuleId
-                          ? { ...m, contents: newContents }
-                          : m
-                      )
-                      setModules(newModules)
-                      onUpdate({ modules: newModules })
+                droppableId={MODULES_DROPPABLE_ID}
+                type="module"
+                useExternalContext
+                renderItem={(module, index) => (
+                  <ModuleRow
+                    module={module}
+                    index={index}
+                    isEditing={editingModuleId === module.id}
+                    editingTitle={editingTitle}
+                    setEditingTitle={setEditingTitle}
+                    onStartEdit={() => {
+                      setEditingModuleId(module.id)
+                      setEditingTitle(module.title)
                     }}
-                    renderItem={(content) => (
-                      <div className="bg-muted/30 p-4 rounded-lg flex items-center justify-between border border-transparent hover:border-primary transition-colors mb-3">
-                        <div className="flex items-center gap-4">
-                          <GripVertical className="size-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
-                          {getContentIcon(content.type)}
-                          <div>
-                            <p className="font-medium">
-                              {t.lesson}: {content.title}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditContent(content)}
-                          >
-                            <Pencil className="size-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeLesson(content.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            disabled={deletingLessonId === content.id}
-                          >
-                            {deletingLessonId === content.id ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="size-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                    onSaveTitle={handleSaveModuleTitle}
+                    onCancelEdit={() => {
+                      setEditingModuleId(null)
+                      setEditingTitle("")
+                    }}
+                    onDelete={() => handleDeleteModule(module.id)}
+                    onToggle={() => handleToggleModule(module.id)}
+                    onAddContent={() => handleOpenAddContent(module.id)}
+                    onEditContent={(content) =>
+                      handleEditContent(module.id, content)
+                    }
+                    onRemoveContent={(contentId) =>
+                      removeLesson(module.id, contentId)
+                    }
+                    deletingLessonId={deletingLessonId}
+                    editLabel={tActions?.edit || "Edit"}
+                    deleteLabel={(tActions as any)?.delete || "Delete"}
+                    addContentLabel={t.addContent}
                   />
                 )}
-
-                {/* Drop Zone */}
-                <div className="border-2 border-dashed border-primary/30 rounded-lg h-12 flex items-center justify-center">
-                  <p className="text-primary/70 text-sm">{t.dropContentHere}</p>
-                </div>
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+              />
+            </div>
+          </DragDropContext>
+        )}
+      </Section>
 
       <AddContentModal
         isOpen={isAddContentModalOpen}
@@ -464,6 +442,371 @@ export function CurriculumStep({
         mode={editingContent ? "edit" : "create"}
         initialData={editingContent}
       />
+    </div>
+  )
+}
+
+function EmptyModules({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="flex flex-col items-start gap-4 border-y border-dashed py-12">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium text-foreground">
+          Start with a module.
+        </p>
+        <p className="max-w-md text-sm text-muted-foreground">
+          Group your course into modules first — for example, &ldquo;Week 1:
+          Setup&rdquo; or &ldquo;Module I: Foundations&rdquo;. Add lessons,
+          quizzes, and assignments inside each one.
+        </p>
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={onAdd}>
+        <Plus className="size-4" />
+        Add the first module
+      </Button>
+    </div>
+  )
+}
+
+interface ModuleRowProps {
+  module: CourseModule
+  index: number
+  isEditing: boolean
+  editingTitle: string
+  setEditingTitle: (s: string) => void
+  onStartEdit: () => void
+  onSaveTitle: () => void
+  onCancelEdit: () => void
+  onDelete: () => void
+  onToggle: () => void
+  onAddContent: () => void
+  onEditContent: (c: CourseContent) => void
+  onRemoveContent: (id: string) => void
+  deletingLessonId: string | null
+  editLabel: string
+  deleteLabel: string
+  addContentLabel: string
+}
+
+function ModuleRow({
+  module,
+  index,
+  isEditing,
+  editingTitle,
+  setEditingTitle,
+  onStartEdit,
+  onSaveTitle,
+  onCancelEdit,
+  onDelete,
+  onToggle,
+  onAddContent,
+  onEditContent,
+  onRemoveContent,
+  deletingLessonId,
+  editLabel,
+  deleteLabel,
+  addContentLabel,
+}: ModuleRowProps) {
+  return (
+    <Collapsible
+      open={module.isExpanded}
+      onOpenChange={onToggle}
+      className="group/module border-b border-border last:border-b-0"
+    >
+      {/*
+        Header row. When the module is collapsed, it doubles as a drop zone
+        for content items dragged in from other modules (type="content").
+        Expanded modules don't need this — their CollapsibleContent already
+        renders a contents Droppable that catches the drop.
+      */}
+      {module.isExpanded ? (
+        <ModuleHeader
+          module={module}
+          index={index}
+          isEditing={isEditing}
+          editingTitle={editingTitle}
+          setEditingTitle={setEditingTitle}
+          onStartEdit={onStartEdit}
+          onSaveTitle={onSaveTitle}
+          onCancelEdit={onCancelEdit}
+          onDelete={onDelete}
+          editLabel={editLabel}
+          deleteLabel={deleteLabel}
+          isDropTarget={false}
+        />
+      ) : (
+        <Droppable
+          droppableId={collapsedHeaderDroppableId(module.id)}
+          type="content"
+        >
+          {(provided, snapshot) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              <ModuleHeader
+                module={module}
+                index={index}
+                isEditing={isEditing}
+                editingTitle={editingTitle}
+                setEditingTitle={setEditingTitle}
+                onStartEdit={onStartEdit}
+                onSaveTitle={onSaveTitle}
+                onCancelEdit={onCancelEdit}
+                onDelete={onDelete}
+                editLabel={editLabel}
+                deleteLabel={deleteLabel}
+                isDropTarget={snapshot.isDraggingOver}
+              />
+              {/*
+                Placeholder must be rendered for hello-pangea to track this
+                droppable, but a collapsed module shows no list — wrap it so
+                it has no visual footprint.
+              */}
+              <div className="hidden">{provided.placeholder}</div>
+            </div>
+          )}
+        </Droppable>
+      )}
+
+      <CollapsibleContent className="pb-4">
+        <div className="ms-6 flex flex-col gap-2 border-s border-border ps-5">
+          {/*
+            Always render the contents Droppable, even when empty, so the
+            module can receive cross-module drops. The SortableList renders
+            its own Droppable internally (external context mode); the empty
+            shell below only applies when the module has zero items.
+          */}
+          {module.contents.length === 0 ? (
+            <Droppable
+              droppableId={contentDroppableId(module.id)}
+              type="content"
+            >
+              {(provided, snapshot) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={cn(
+                    "flex flex-col rounded-md border border-dashed border-transparent px-3 py-3 text-xs text-muted-foreground transition-colors",
+                    snapshot.isDraggingOver &&
+                      "border-border bg-muted/50 text-foreground"
+                  )}
+                >
+                  <span>
+                    {snapshot.isDraggingOver
+                      ? "Drop here to add to this module"
+                      : "No materials yet."}
+                  </span>
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          ) : (
+            <SortableList
+              items={module.contents}
+              droppableId={contentDroppableId(module.id)}
+              type="content"
+              useExternalContext
+              droppableClassName={(isDraggingOver) =>
+                cn(
+                  "rounded-md border border-transparent transition-colors",
+                  isDraggingOver && "border-border bg-muted/40"
+                )
+              }
+              renderItem={(content) => (
+                <ContentRow
+                  content={content}
+                  isDeleting={deletingLessonId === content.id}
+                  onEdit={() => onEditContent(content)}
+                  onDelete={() => onRemoveContent(content.id)}
+                />
+              )}
+            />
+          )}
+          <div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onAddContent}
+              className="-ms-2 text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="size-4" />
+              {addContentLabel}
+            </Button>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+interface ModuleHeaderProps {
+  module: CourseModule
+  index: number
+  isEditing: boolean
+  editingTitle: string
+  setEditingTitle: (s: string) => void
+  onStartEdit: () => void
+  onSaveTitle: () => void
+  onCancelEdit: () => void
+  onDelete: () => void
+  editLabel: string
+  deleteLabel: string
+  /** Whether a content item is currently hovered over this collapsed header. */
+  isDropTarget: boolean
+}
+
+function ModuleHeader({
+  module,
+  index,
+  isEditing,
+  editingTitle,
+  setEditingTitle,
+  onStartEdit,
+  onSaveTitle,
+  onCancelEdit,
+  onDelete,
+  editLabel,
+  deleteLabel,
+  isDropTarget,
+}: ModuleHeaderProps) {
+  return (
+    <div
+      className={cn(
+        "relative flex items-center gap-2 py-3 transition-colors",
+        // Quiet drop indicator for collapsed-header targets. A thin
+        // inline-start hairline at full ink + a muted plate; no glow, no
+        // shadow, per DESIGN.md flat-by-default.
+        isDropTarget && "bg-muted/50"
+      )}
+    >
+      {isDropTarget ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-1 w-[2px] rounded-full bg-foreground [inset-inline-start:-0.25rem]"
+        />
+      ) : null}
+      <GripVertical className="size-4 shrink-0 cursor-grab text-muted-foreground/60 opacity-0 transition-opacity group-hover/module:opacity-100 active:cursor-grabbing" />
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="flex flex-1 items-center gap-2 text-start outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {module.isExpanded ? (
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+          )}
+          <span className="text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          {isEditing ? (
+            <Input
+              value={editingTitle}
+              onChange={(e) => setEditingTitle(e.target.value)}
+              onBlur={onSaveTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSaveTitle()
+                if (e.key === "Escape") onCancelEdit()
+              }}
+              onClick={(e) => e.stopPropagation()}
+              autoFocus
+              className="h-8 max-w-sm"
+            />
+          ) : (
+            <span className="truncate text-sm font-semibold text-foreground">
+              {module.title}
+            </span>
+          )}
+        </button>
+      </CollapsibleTrigger>
+      <span className="hidden text-xs text-muted-foreground sm:inline">
+        {module.contents.length}{" "}
+        {module.contents.length === 1 ? "item" : "items"}
+      </span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onStartEdit}>
+            <Pencil className="size-4" />
+            {editLabel}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={onDelete}
+          >
+            <Trash2 className="size-4" />
+            {deleteLabel}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
+
+interface ContentRowProps {
+  content: CourseContent
+  isDeleting: boolean
+  onEdit: () => void
+  onDelete: () => void
+}
+
+function ContentRow({ content, isDeleting, onEdit, onDelete }: ContentRowProps) {
+  return (
+    <div
+      className={cn(
+        "group/row -mx-2 flex items-center gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/60"
+      )}
+    >
+      <GripVertical className="size-3.5 shrink-0 cursor-grab text-muted-foreground/50 opacity-0 transition-opacity group-hover/row:opacity-100 active:cursor-grabbing" />
+      <ContentTypeGlyph type={content.type} />
+      <span className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="truncate text-sm text-foreground">
+          {content.title || "Untitled"}
+        </span>
+        <span className="hidden text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground sm:inline">
+          {CONTENT_TYPE_LABEL[content.type]}
+        </span>
+        {content.status === "draft" ? (
+          <span className="hidden text-[0.6875rem] uppercase tracking-[0.08em] text-muted-foreground sm:inline">
+            · Draft
+          </span>
+        ) : null}
+      </span>
+      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-7"
+          onClick={onEdit}
+          aria-label="Edit"
+        >
+          <Pencil className="size-3.5" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="size-7 text-muted-foreground hover:text-destructive"
+          onClick={onDelete}
+          disabled={isDeleting}
+          aria-label="Delete"
+        >
+          {isDeleting ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="size-3.5" />
+          )}
+        </Button>
+      </div>
     </div>
   )
 }

@@ -1,24 +1,18 @@
 "use client"
 
-import { Upload, Video } from "lucide-react"
+import { X } from "lucide-react"
 
 import type { CloudinaryUploadResult } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_services/cloudinary-service"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { CourseFormData } from "../../types"
 
 import { Button } from "@/components/ui/button"
-import { DefaultImage } from "@/components/ui/defult-Image"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { CloudinaryUploader } from "@/components/ui/cloudinary-uploader"
+import { DefaultImage } from "@/components/ui/defult-Image"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
+import { Separator, SeparatorWithText } from "@/components/ui/separator"
+
+import { Field, Section } from "../wizard-shell"
 
 interface MediaStepProps {
   dictionary: DictionaryType
@@ -28,143 +22,116 @@ interface MediaStepProps {
   onBack: () => void
 }
 
-export function MediaStep({
-  dictionary,
-  formData,
-  onUpdate,
-  onNext,
-  onBack,
-}: MediaStepProps) {
+export function MediaStep({ dictionary, formData, onUpdate }: MediaStepProps) {
   const t = dictionary.profilePage.createCourse.media
-  const tActions = dictionary.profilePage.createCourse.actions
-  const tProgress = dictionary.profilePage.createCourse.progress
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <header className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight">
-            {dictionary.profilePage.createCourse.basicInfo.title
-              .split(" ")
-              .slice(0, 3)
-              .join(" ")}
-          </h1>
-        </div>
-      </header>
-
-      {/* Course Thumbnail Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.courseThumbnail}</CardTitle>
-          <CardDescription>{t.thumbnailRecommendation}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {formData.thumbnailUrl ? (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden border">
+    <div className="flex flex-col gap-10">
+      <Section
+        eyebrow="Cover image"
+        caption={t.thumbnailRecommendation}
+      >
+        {formData.thumbnailUrl ? (
+          <figure className="group relative overflow-hidden rounded-md border bg-muted">
+            <div className="aspect-video w-full">
               <DefaultImage
                 src={formData.thumbnailUrl}
-                alt="Course Thumbnail"
+                alt="Course thumbnail"
                 fill
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
-              <Button
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={() => onUpdate({ thumbnailUrl: undefined })}
-              >
-                Remove
-              </Button>
             </div>
-          ) : (
-            <CloudinaryUploader
-              dictionary={dictionary}
-              defaultResourceType="image"
-              showTypeSelector={false}
-              onUploadComplete={(result: CloudinaryUploadResult) =>
-                onUpdate({ thumbnailUrl: result.secureUrl })
-              }
-            />
-          )}
-        </CardContent>
-      </Card>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute top-3 end-3 bg-background/80 backdrop-blur-sm hover:bg-background"
+              onClick={() => onUpdate({ thumbnailUrl: undefined })}
+            >
+              <X className="size-3.5" />
+              Remove
+            </Button>
+          </figure>
+        ) : (
+          <CloudinaryUploader
+            dictionary={dictionary}
+            defaultResourceType="image"
+            showTypeSelector={false}
+            onUploadComplete={(result: CloudinaryUploadResult) =>
+              onUpdate({ thumbnailUrl: result.secureUrl })
+            }
+          />
+        )}
+      </Section>
 
-      {/* Promotional Video Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.promotionalVideo}</CardTitle>
-          <CardDescription>{t.videoRecommendation}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {formData.promoVideoUrl ? (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden border bg-black">
+      <Separator />
+
+      <Section
+        eyebrow="Promotional video"
+        caption={t.videoRecommendation}
+      >
+        {formData.promoVideoUrl ? (
+          <figure className="relative overflow-hidden rounded-md border bg-black">
+            <div className="aspect-video w-full">
               <video
                 src={formData.promoVideoUrl}
                 poster={formData.thumbnailUrl}
                 controls
-                className="w-full h-full"
+                className="h-full w-full"
               />
-              <Button
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2 z-10"
-                onClick={() => onUpdate({ promoVideoUrl: undefined })}
-              >
-                Remove
-              </Button>
             </div>
-          ) : (
-            <>
-              {/* File Uploader */}
-              <CloudinaryUploader
-                dictionary={dictionary}
-                defaultResourceType="video"
-                showTypeSelector={false}
-                onUploadComplete={(result: CloudinaryUploadResult) =>
-                  onUpdate({ promoVideoUrl: result.secureUrl })
-                }
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="absolute top-3 end-3 z-10 bg-background/80 backdrop-blur-sm hover:bg-background"
+              onClick={() => onUpdate({ promoVideoUrl: undefined })}
+            >
+              <X className="size-3.5" />
+              Remove
+            </Button>
+          </figure>
+        ) : (
+          <div className="flex flex-col gap-5">
+            <CloudinaryUploader
+              dictionary={dictionary}
+              defaultResourceType="video"
+              showTypeSelector={false}
+              onUploadComplete={(result: CloudinaryUploadResult) =>
+                onUpdate({ promoVideoUrl: result.secureUrl })
+              }
+            />
+            <SeparatorWithText>{t.or}</SeparatorWithText>
+            <Field
+              label={t.pasteVideoUrl}
+              htmlFor="video-url"
+              hint="YouTube, Vimeo, or any public mp4 link."
+            >
+              <Input
+                id="video-url"
+                type="url"
+                placeholder={t.videoUrlPlaceholder}
+                value={formData.promoVideoUrl || ""}
+                onChange={(e) => onUpdate({ promoVideoUrl: e.target.value })}
               />
+            </Field>
+          </div>
+        )}
+      </Section>
 
-              {/* Separator */}
-              <div className="flex items-center gap-4">
-                <Separator className="flex-1" />
-                <span className="text-xs font-semibold text-muted-foreground">
-                  {t.or}
-                </span>
-                <Separator className="flex-1" />
-              </div>
+      <Separator />
 
-              {/* URL Input */}
-              <div>
-                <Label htmlFor="video-url">{t.pasteVideoUrl}</Label>
-                <Input
-                  id="video-url"
-                  type="url"
-                  placeholder={t.videoUrlPlaceholder}
-                  value={formData.promoVideoUrl || ""}
-                  onChange={(e) => onUpdate({ promoVideoUrl: e.target.value })}
-                  className="mt-2"
-                />
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Course Branding Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.branding}</CardTitle>
-          <CardDescription>{t.brandingDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div>
-            <Label htmlFor="brand-color">{t.primaryBrandColor}</Label>
-            <div className="relative mt-2 max-w-xs">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                <div
-                  className="size-4 rounded-full border border-muted-foreground/30"
+      <Section
+        eyebrow="Course accent"
+        caption={t.brandingDescription}
+      >
+        <div className="max-w-xs">
+          <Field label={t.primaryBrandColor} htmlFor="brand-color">
+            <div className="relative">
+              <div className="absolute inset-y-0 flex items-center start-3">
+                <span
+                  aria-hidden
+                  className="size-4 rounded-full border border-border"
                   style={{ backgroundColor: formData.brandColor }}
                 />
               </div>
@@ -173,21 +140,21 @@ export function MediaStep({
                 type="text"
                 value={formData.brandColor}
                 onChange={(e) => onUpdate({ brandColor: e.target.value })}
-                className="pl-10 pr-12"
+                className="ps-10 pe-12 font-mono text-xs uppercase tracking-wider"
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <Input
+              <div className="absolute inset-y-0 flex items-center end-3">
+                <input
                   type="color"
                   value={formData.brandColor}
                   onChange={(e) => onUpdate({ brandColor: e.target.value })}
-                  className="w-6 h-6 p-0 border-none cursor-pointer bg-transparent"
-                  aria-label="Color Picker"
+                  className="size-6 cursor-pointer rounded border-0 bg-transparent p-0"
+                  aria-label="Pick course accent color"
                 />
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </Field>
+        </div>
+      </Section>
     </div>
   )
 }

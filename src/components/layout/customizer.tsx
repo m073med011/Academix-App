@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useParams, usePathname, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { useCartStore } from "@/stores/cart-store"
 import {
   AlignLeft,
@@ -42,6 +43,7 @@ import { useSidebar } from "@/components/ui/sidebar"
 const APPLY_DELAY = 5 // seconds
 
 export function Customizer() {
+  const { status } = useSession()
   const { settings, updateSettings, resetSettings } = useSettings()
   const { setOpen } = useSidebar()
   const pathname = usePathname()
@@ -145,6 +147,10 @@ export function Customizer() {
     resetSettings()
     router.push(relocalizePathname(pathname, "en"), { scroll: false })
   }, [resetSettings, router, pathname])
+
+  if (status !== "authenticated") {
+    return null
+  }
 
   return (
     <Sheet>

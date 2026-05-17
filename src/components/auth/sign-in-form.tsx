@@ -31,7 +31,7 @@ import { OAuthLinks } from "./oauth-links"
 
 
 
-export function SignInForm({ dictionary }: { dictionary: DictionaryType }) {
+export function SignInForm({ dictionary, onSwitchToRegister }: { dictionary: DictionaryType; onSwitchToRegister?: () => void }) {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -191,17 +191,22 @@ export function SignInForm({ dictionary }: { dictionary: DictionaryType }) {
         </ButtonLoading>
         <div className="-mt-4 text-center text-sm">
           {dictionary.auth.signIn.noAccount}{" "}
-          <Link
-            href={ensureLocalizedPathname(
-              redirectPathname
-                ? ensureRedirectPathname("/register", redirectPathname)
-                : "/register",
-              locale
-            )}
-            className="underline"
-          >
-            {dictionary.auth.signIn.signUp}
-          </Link>
+          {onSwitchToRegister ? (
+            <button
+              type="button"
+              onClick={onSwitchToRegister}
+              className="underline"
+            >
+              {dictionary.auth.signIn.signUp}
+            </button>
+          ) : (
+            <Link
+              href={ensureLocalizedPathname("/auth?mode=register", locale)}
+              className="underline"
+            >
+              {dictionary.auth.signIn.signUp}
+            </Link>
+          )}
         </div>
         <SeparatorWithText>
           {dictionary.auth.signIn.orContinue}

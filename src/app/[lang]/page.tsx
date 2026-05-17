@@ -41,7 +41,7 @@ export default async function LandingPage(props: {
               </p>
               <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
                 <a
-                  href={ensureLocalizedPathname("/auth/register", params.lang)}
+                  href={ensureLocalizedPathname("/auth?mode=register", params.lang)}
                   className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-8 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   Get started
