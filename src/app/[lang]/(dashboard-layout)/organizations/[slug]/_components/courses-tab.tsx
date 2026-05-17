@@ -17,7 +17,7 @@ interface OrganizationCourse {
   status: "Active" | "Pending" | "Archived"
   enrollees: number
   createdDate: string
-  [key: string]: any
+  [key: string]: any   
 }
 
 // Sample data matching the mockup
