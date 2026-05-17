@@ -278,7 +278,7 @@ export function Customizer() {
                     "#facc15", // yellow
                     "#06b6d4", // cyan
                     "#ec4899", // pink
-                    "#18181b", // zinc
+                    "#ffffff", // white
                   ].map((color) => (
                     <button
                       key={color}

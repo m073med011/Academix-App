@@ -33,13 +33,13 @@ export function BottomBarHeader({
         <div className="flex items-center gap-4">
           <Link
             href={ensureLocalizedPathname("/", locale)}
-            className="hidden text-foreground font-black lg:flex"
+            className="hidden text-foreground font-black lg:flex items-center gap-2"
           >
             <Image
-              src="/images/icons/Academix.svg"
-              alt=""
-              height={24}
-              width={24}
+              src="/images/logos/logo02.png"
+              alt="Academix"
+              height={26}
+              width={26}
               className="dark:invert"
             />
             <span>Academix</span>
