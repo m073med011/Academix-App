@@ -130,8 +130,8 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
     // 6) Register form body slides in from the overlay side
     tl.fromTo(
       registerBodyRef.current,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+      { opacity: 0, y: 25, x: 0 },
+      { opacity: 1, y: 0, x: 0, duration: 0.5, ease: "power2.out" },
       0.7
     )
 
@@ -208,8 +208,8 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
     // 6) Sign-in form body enters
     tl.fromTo(
       signInBodyRef.current,
-      { opacity: 0, y: 25 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+      { opacity: 0, y: 25, x: 0 },
+      { opacity: 1, y: 0, x: 0, duration: 0.5, ease: "power2.out" },
       0.7
     )
 
@@ -232,36 +232,16 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
       {/* ─── Sign In Side ─── */}
       <div
         className={cn(
-          "relative flex w-full flex-col items-center justify-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
+          "relative flex w-full flex-col items-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
           isRtl ? "md:order-2" : "md:order-1",
           mode !== "signin" && "hidden md:flex"
         )}
       >
-        <header className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-5 md:px-10 md:py-6">
-          <Link
-            href={ensureLocalizedPathname("/", locale)}
-            className="z-10 inline-flex items-center text-foreground"
-            aria-label="Academix"
-          >
-            <Image
-              src="/images/logos/Logo.svg"
-              width={48}
-              height={28}
-              alt=""
-              priority
-              className="dark:invert"
-            />
-          </Link>
-          <div className="flex items-center gap-1">
-            <LanguageDropdown dictionary={dictionary} />
-            <ModeDropdown dictionary={dictionary} />
-          </div>
-        </header>
 
         <div
           ref={signInRef}
           className={cn(
-            "w-full max-w-md",
+            "w-full max-w-md my-auto",
             mode === "register" && "pointer-events-none"
           )}
         >
@@ -285,7 +265,7 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
       {/* ─── Register Side ─── */}
       <div
         className={cn(
-          "relative flex w-full flex-col items-center justify-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
+          "relative flex w-full flex-col items-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
           isRtl ? "md:order-1" : "md:order-2",
           mode !== "register" && "hidden md:flex"
         )}
@@ -293,7 +273,7 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
         <div
           ref={registerRef}
           className={cn(
-            "w-full max-w-md",
+            "w-full max-w-md my-auto",
             mode === "signin" && "pointer-events-none"
           )}
         >
@@ -313,6 +293,35 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
           </div>
         </div>
       </div>
+
+      {/* ─── Global Header ─── */}
+      <header
+        className={cn(
+          "absolute top-0 z-20 flex w-full items-center justify-between px-6 py-5 md:w-1/2 md:px-10 md:py-6",
+          mode === "signin"
+            ? (isRtl ? "right-0" : "left-0")
+            : (isRtl ? "left-0" : "right-0")
+        )}
+      >
+        <Link
+          href={ensureLocalizedPathname("/", locale)}
+          className="inline-flex items-center text-foreground"
+          aria-label="Academix"
+        >
+          <Image
+            src="/images/logos/Logo.svg"
+            width={48}
+            height={28}
+            alt=""
+            priority
+            className="dark:invert"
+          />
+        </Link>
+        <div className="flex items-center gap-1">
+          <LanguageDropdown dictionary={dictionary} />
+          <ModeDropdown dictionary={dictionary} />
+        </div>
+      </header>
 
       {/* ─── Sliding Video Overlay (desktop only) ─── */}
       <div
