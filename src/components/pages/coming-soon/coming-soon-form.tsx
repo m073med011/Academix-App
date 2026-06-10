@@ -7,7 +7,7 @@ import type { ComingSoonFormType } from "@/types"
 
 import { ComingSoonSchema } from "@/schemas/coming-soon-schema"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -32,8 +32,7 @@ export function ComingSoonForm() {
   async function onSubmit(_data: ComingSoonFormType) {
     form.reset(defaultValues) // Reset the form to the initial state
 
-    toast({
-      title: "Thank you for subscribing!",
+    toast.success("Thank you for subscribing!", {
       description: "We'll notify you when we launch.",
     })
   }

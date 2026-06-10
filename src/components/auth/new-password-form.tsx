@@ -13,7 +13,7 @@ import { NewPasswordSchema } from "@/schemas/new-passward-schema"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -48,14 +48,11 @@ export function NewPasswordForm({
 
   async function onSubmit(_data: NewPasswordFormType) {
     try {
-      toast({
-        title: dictionary.auth.newPassword.passwordUpdated,
+      toast.success(dictionary.auth.newPassword.passwordUpdated, {
         description: dictionary.auth.newPassword.passwordUpdateSuccess,
       })
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.newPassword.somethingWrong,
+      toast.error(dictionary.auth.newPassword.somethingWrong, {
         description: error instanceof Error ? error.message : undefined,
       })
     }

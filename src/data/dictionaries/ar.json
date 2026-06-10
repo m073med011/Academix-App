@@ -225,7 +225,9 @@
       "twoFactorMessage": "أرسلنا رمز تحقق إلى بريدك الإلكتروني.",
       "accountDisabled": "الحساب موقوف",
       "accountDisabledMessage": "نقلك الآن إلى صفحة إعادة التفعيل.",
-      "signInFailed": "تعذّر تسجيل الدخول"
+      "signInFailed": "تعذّر تسجيل الدخول",
+      "welcomeBack": "مرحبًا بعودتك",
+      "loggedInAs": "تم تسجيل الدخول كـ"
     },
     "register": {
       "title": "أنشئ حسابك",

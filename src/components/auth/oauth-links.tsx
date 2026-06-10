@@ -10,7 +10,7 @@ import type { LocaleType } from "@/types"
 import { oauthLinksData } from "@/data/oauth-links"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button } from "@/components/ui/button"
 
 export function OAuthLinks({ dictionary }: { dictionary: DictionaryType }) {
@@ -23,16 +23,15 @@ export function OAuthLinks({ dictionary }: { dictionary: DictionaryType }) {
   const handleSignIn = async (provider: string) => {
     if (provider.toLowerCase() === "google") {
       setIsGoogleLoading(true)
-      toast({
-        title: dictionary.auth.oauth.redirecting.replace(
-          "{provider}",
-          "Google"
-        ),
-        description: dictionary.auth.oauth.redirectingMessage.replace(
-          "{provider}",
-          "Google"
-        ),
-      })
+      toast.info(
+        dictionary.auth.oauth.redirecting.replace("{provider}", "Google"),
+        {
+          description: dictionary.auth.oauth.redirectingMessage.replace(
+            "{provider}",
+            "Google"
+          ),
+        }
+      )
     }
 
     try {
@@ -48,9 +47,7 @@ export function OAuthLinks({ dictionary }: { dictionary: DictionaryType }) {
       })
     } catch (_error) {
       setIsGoogleLoading(false)
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.oauth.failed,
+      toast.error(dictionary.auth.oauth.failed, {
         description: dictionary.auth.oauth.failedMessage.replace(
           "{provider}",
           "Google"

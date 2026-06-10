@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Loader2 } from "lucide-react"
 
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -36,7 +36,6 @@ interface ChangePasswordFormProps {
 }
 
 export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,8 +55,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         newPassword: values.newPassword,
       })
 
-      toast({
-        title: "Password updated",
+      toast.success("Password updated", {
         description: "Your password has been changed successfully.",
       })
 
@@ -75,9 +73,7 @@ export function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
         return
       }
 
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description:
           "Failed to change password. Please check your current password.",
       })

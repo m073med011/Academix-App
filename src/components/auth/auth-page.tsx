@@ -36,6 +36,7 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
 
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLElement>(null)
   const signInRef = useRef<HTMLDivElement>(null)
   const registerRef = useRef<HTMLDivElement>(null)
   const signInHeaderRef = useRef<HTMLDivElement>(null)
@@ -50,17 +51,38 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
   // LTR: right → left  (xPercent: -100)   RTL: left → right (xPercent: +100)
   const registerXPercent = -100 * d
 
+  // Header is pinned to the start side and slides to the end side on register
+  // (opposite direction to the overlay, so they swap halves)
+  const headerRegisterXPercent = 100 * d
+
   const { contextSafe } = useGSAP(
     () => {
-      // Default state: register hidden (enters FROM the overlay side, so starts opposite)
-      gsap.set(registerRef.current, { opacity: 0, x: -80 * d })
-      gsap.set(registerBodyRef.current, { opacity: 0, y: 20 })
-
-      if (initialMode === "register") {
+      // Re-sync every element for the current `mode` and direction. This runs
+      // on mount AND whenever `isRtl` flips (language change), so any leftover
+      // transforms from a previous direction get rewritten with the new sign.
+      if (mode === "register") {
         gsap.set(overlayRef.current, { xPercent: registerXPercent })
+        gsap.set(headerRef.current, {
+          xPercent: headerRegisterXPercent,
+          x: 0,
+          y: 0,
+          opacity: 1,
+        })
         gsap.set(signInRef.current, { opacity: 0, x: 80 * d })
+        gsap.set(signInHeaderRef.current, { opacity: 0, y: -20 })
+        gsap.set(signInBodyRef.current, { opacity: 0, x: 60 * d })
         gsap.set(registerRef.current, { opacity: 1, x: 0 })
-        gsap.set(registerBodyRef.current, { opacity: 1, y: 0 })
+        gsap.set(registerHeaderRef.current, { opacity: 1, y: 0 })
+        gsap.set(registerBodyRef.current, { opacity: 1, x: 0, y: 0 })
+      } else {
+        gsap.set(overlayRef.current, { xPercent: 0 })
+        gsap.set(headerRef.current, { xPercent: 0, x: 0, y: 0, opacity: 1 })
+        gsap.set(signInRef.current, { opacity: 1, x: 0 })
+        gsap.set(signInHeaderRef.current, { opacity: 1, y: 0 })
+        gsap.set(signInBodyRef.current, { opacity: 1, x: 0, y: 0 })
+        gsap.set(registerRef.current, { opacity: 0, x: -80 * d })
+        gsap.set(registerHeaderRef.current, { opacity: 0, y: 25 })
+        gsap.set(registerBodyRef.current, { opacity: 0, y: 20 })
       }
     },
     { scope: containerRef, dependencies: [isRtl] }
@@ -81,6 +103,40 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
         ease: "expo.inOut",
       },
       0
+    )
+
+    // 1b) Global header lifts and drifts away in the travel direction
+    tl.to(
+      headerRef.current,
+      {
+        opacity: 0,
+        y: -28,
+        x: 40 * d,
+        duration: 0.4,
+        ease: "power3.in",
+      },
+      0
+    )
+
+    // 1c) While invisible, teleport the header to the new side
+    tl.set(
+      headerRef.current,
+      { xPercent: headerRegisterXPercent, x: -40 * d },
+      0.55
+    )
+
+    // 1d) Global header drops in on the new side with a soft overshoot
+    tl.fromTo(
+      headerRef.current,
+      { opacity: 0, y: -28, x: -40 * d },
+      {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        duration: 0.55,
+        ease: "back.out(1.4)",
+      },
+      0.6
     )
 
     // 2) Sign-in header exits (title + description lift away)
@@ -161,6 +217,36 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
       0
     )
 
+    // 1b) Global header lifts and drifts away in the return direction
+    tl.to(
+      headerRef.current,
+      {
+        opacity: 0,
+        y: -28,
+        x: -40 * d,
+        duration: 0.4,
+        ease: "power3.in",
+      },
+      0
+    )
+
+    // 1c) While invisible, teleport the header back to the start side
+    tl.set(headerRef.current, { xPercent: 0, x: 40 * d }, 0.55)
+
+    // 1d) Global header drops in on the start side with a soft overshoot
+    tl.fromTo(
+      headerRef.current,
+      { opacity: 0, y: -28, x: 40 * d },
+      {
+        opacity: 1,
+        y: 0,
+        x: 0,
+        duration: 0.55,
+        ease: "back.out(1.4)",
+      },
+      0.6
+    )
+
     // 2) Register header exits
     tl.to(
       registerHeaderRef.current,
@@ -233,7 +319,7 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
       <div
         className={cn(
           "relative flex w-full flex-col items-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
-          isRtl ? "md:order-2" : "md:order-1",
+          "md:order-1",
           mode !== "signin" && "hidden md:flex"
         )}
       >
@@ -266,7 +352,7 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
       <div
         className={cn(
           "relative flex w-full flex-col items-center px-6 pt-24 pb-16 md:w-1/2 md:px-10",
-          isRtl ? "md:order-1" : "md:order-2",
+          "md:order-2",
           mode !== "register" && "hidden md:flex"
         )}
       >
@@ -296,11 +382,10 @@ export function AuthPage({ dictionary, initialMode = "signin" }: AuthPageProps) 
 
       {/* ─── Global Header ─── */}
       <header
+        ref={headerRef}
         className={cn(
           "absolute top-0 z-20 flex w-full items-center justify-between px-6 py-5 md:w-1/2 md:px-10 md:py-6",
-          mode === "signin"
-            ? (isRtl ? "right-0" : "left-0")
-            : (isRtl ? "left-0" : "right-0")
+          isRtl ? "right-0" : "left-0"
         )}
       >
         <Link

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
+import { getSession, signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
@@ -14,7 +14,7 @@ import { SignInSchema } from "@/schemas/sign-in-schema"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -67,8 +67,7 @@ export function SignInForm({ dictionary, onSwitchToRegister }: { dictionary: Dic
         // Check for email verification required error
         if (result.error.startsWith("EMAIL_VERIFICATION_REQUIRED:")) {
           const userEmail = result.error.split(":")[1]
-          toast({
-            title: dictionary.auth.signIn.emailVerificationRequired,
+          toast.info(dictionary.auth.signIn.emailVerificationRequired, {
             description: dictionary.auth.signIn.verifyEmailMessage,
           })
           router.push(
@@ -87,8 +86,7 @@ export function SignInForm({ dictionary, onSwitchToRegister }: { dictionary: Dic
         // Check for 2FA required error
         if (result.error.startsWith("2FA_REQUIRED:")) {
           const userEmail = result.error.split(":")[1]
-          toast({
-            title: dictionary.auth.signIn.twoFactorRequired,
+          toast.info(dictionary.auth.signIn.twoFactorRequired, {
             description: dictionary.auth.signIn.twoFactorMessage,
           })
           router.push(
@@ -106,9 +104,7 @@ export function SignInForm({ dictionary, onSwitchToRegister }: { dictionary: Dic
 
         // Check for account disabled error, redirect to reactivate page
         if (result.error.startsWith("ACCOUNT_DISABLED:")) {
-          toast({
-            variant: "destructive",
-            title: dictionary.auth.signIn.accountDisabled,
+          toast.error(dictionary.auth.signIn.accountDisabled, {
             description: dictionary.auth.signIn.accountDisabledMessage,
           })
           router.push(
@@ -124,11 +120,22 @@ export function SignInForm({ dictionary, onSwitchToRegister }: { dictionary: Dic
         throw new Error(result.error)
       }
 
+      // Fetch session to get user data for the welcome toast
+      const session = await getSession()
+      if (session?.user) {
+        toast.success(
+          `${dictionary.auth.signIn.welcomeBack ?? "Welcome back"}, ${session.user.name}!`,
+          {
+            description: session.user.role
+              ? `${dictionary.auth.signIn.loggedInAs ?? "Logged in as"} ${session.user.role}`
+              : undefined,
+          }
+        )
+      }
+
       router.push(ensureLocalizedPathname(redirectPathname, locale))
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.signIn.signInFailed,
+      toast.error(dictionary.auth.signIn.signInFailed, {
         description: error instanceof Error ? error.message : undefined,
       })
     }

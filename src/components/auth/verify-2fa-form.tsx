@@ -11,7 +11,7 @@ import type { DictionaryType } from "@/lib/get-dictionary"
 import type { LocaleType } from "@/types"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button, ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -127,8 +127,7 @@ export function Verify2FAForm({ dictionary }: { dictionary: DictionaryType }) {
         )
       }
 
-      toast({
-        title: dictionary.auth.verify2FA.verificationSuccessful,
+      toast.success(dictionary.auth.verify2FA.verificationSuccessful, {
         description:
           result.message || dictionary.auth.verify2FA.verificationSuccess,
       })
@@ -136,9 +135,7 @@ export function Verify2FAForm({ dictionary }: { dictionary: DictionaryType }) {
       // Use hard navigation so middleware sees the fresh JWT
       window.location.href = finalRedirect
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.verify2FA.verificationFailed,
+      toast.error(dictionary.auth.verify2FA.verificationFailed, {
         description:
           error instanceof Error
             ? error.message
@@ -169,8 +166,7 @@ export function Verify2FAForm({ dictionary }: { dictionary: DictionaryType }) {
         throw new Error(result.message || "Failed to resend code")
       }
 
-      toast({
-        title: dictionary.auth.verify2FA.codeResent,
+      toast.success(dictionary.auth.verify2FA.codeResent, {
         description: dictionary.auth.verify2FA.codeResentMessage,
       })
 
@@ -178,9 +174,7 @@ export function Verify2FAForm({ dictionary }: { dictionary: DictionaryType }) {
       setCountdown(60)
       form.setValue("code", "")
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.verify2FA.resendFailed,
+      toast.error(dictionary.auth.verify2FA.resendFailed, {
         description:
           error instanceof Error
             ? error.message

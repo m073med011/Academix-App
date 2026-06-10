@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Toaster as Sonner, toast as sonnerToast } from "sonner"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
@@ -12,11 +13,21 @@ type ToasterProps = ComponentProps<typeof Sonner>
 
 export function Toaster({ ...props }: ToasterProps) {
   const { settings } = useSettings()
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 768px)")
+    setIsMobile(mql.matches)
+
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mql.addEventListener("change", handler)
+    return () => mql.removeEventListener("change", handler)
+  }, [])
 
   const mode = settings.mode
   const isRtl = settings.locale === "ar"
   const direction = !isRtl ? "rtl" : "ltr"
-  const position = !isRtl ? "top-left" : "top-right"
+  const position = isMobile ? "bottom-center" : "top-center"
 
   return (
     <Sonner

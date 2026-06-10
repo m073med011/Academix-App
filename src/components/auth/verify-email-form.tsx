@@ -13,7 +13,7 @@ import type { VerifyEmailFormType } from "@/types"
 import { VerifyEmailSchema } from "@/schemas/verify-email-schema"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button, ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -142,8 +142,7 @@ export function VerifyEmailForm({
         )
       }
 
-      toast({
-        title: dictionary.auth.verifyEmail.emailVerified,
+      toast.success(dictionary.auth.verifyEmail.emailVerified, {
         description:
           result.message || dictionary.auth.verifyEmail.verificationSuccess,
       })
@@ -155,9 +154,7 @@ export function VerifyEmailForm({
         window.location.href = finalRedirect
       }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.verifyEmail.verificationFailed,
+      toast.error(dictionary.auth.verifyEmail.verificationFailed, {
         description:
           error instanceof Error
             ? error.message
@@ -188,8 +185,7 @@ export function VerifyEmailForm({
         throw new Error(result.message || "Failed to resend code")
       }
 
-      toast({
-        title: dictionary.auth.verifyEmail.codeResent,
+      toast.success(dictionary.auth.verifyEmail.codeResent, {
         description: dictionary.auth.verifyEmail.codeResentMessage,
       })
 
@@ -197,9 +193,7 @@ export function VerifyEmailForm({
       setCountdown(60)
       form.setValue("code", "")
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.verifyEmail.resendFailed,
+      toast.error(dictionary.auth.verifyEmail.resendFailed, {
         description:
           error instanceof Error
             ? error.message

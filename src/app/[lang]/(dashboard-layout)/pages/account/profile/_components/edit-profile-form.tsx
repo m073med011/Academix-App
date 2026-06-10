@@ -11,7 +11,7 @@ import { Loader2 } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { CloudinaryUploader } from "@/components/ui/cloudinary-uploader"
@@ -48,7 +48,6 @@ export function EditProfileForm({
 }: EditProfileFormProps) {
   const { update } = useSession()
   const router = useRouter()
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isImageUploading, setIsImageUploading] = useState(false)
 
@@ -71,17 +70,14 @@ export function EditProfileForm({
         ...updatedUser,
       })
 
-      toast({
-        title: "Profile updated",
+      toast.success("Profile updated", {
         description: "Your profile has been updated successfully.",
       })
 
       router.refresh()
       onSuccess?.()
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to update profile. Please try again.",
       })
     } finally {
@@ -104,9 +100,7 @@ export function EditProfileForm({
                 setIsImageUploading(false)
               }}
               onError={(error) => {
-                toast({
-                  variant: "destructive",
-                  title: "Upload failed",
+                toast.error("Upload failed", {
                   description: error,
                 })
                 setIsImageUploading(false)

@@ -227,7 +227,9 @@
       "twoFactorMessage": "We sent a verification code to your email.",
       "accountDisabled": "Account disabled",
       "accountDisabledMessage": "Taking you to reactivation.",
-      "signInFailed": "We couldn't sign you in"
+      "signInFailed": "We couldn't sign you in",
+      "welcomeBack": "Welcome back",
+      "loggedInAs": "Logged in as"
     },
     "register": {
       "title": "Create your account",

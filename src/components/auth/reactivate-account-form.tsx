@@ -18,7 +18,7 @@ import {
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button, ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -126,14 +126,11 @@ export function ReactivateAccountForm({
       })
       setRequiresOtp(true)
 
-      toast({
-        title: "OTP Sent",
+      toast.success("OTP Sent", {
         description: "Please check your email for the verification code.",
       })
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.reactivateAccount.failedTitle,
+      toast.error(dictionary.auth.reactivateAccount.failedTitle, {
         description: error instanceof Error ? error.message : undefined,
       })
     }
@@ -156,8 +153,7 @@ export function ReactivateAccountForm({
         throw new Error(result.message || "Failed to reactivate account")
       }
 
-      toast({
-        title: dictionary.auth.reactivateAccount.successTitle,
+      toast.success(dictionary.auth.reactivateAccount.successTitle, {
         description: dictionary.auth.reactivateAccount.successDescription,
       })
 
@@ -176,9 +172,7 @@ export function ReactivateAccountForm({
       const redirectPath = process.env.NEXT_PUBLIC_HOME_PATHNAME || "/"
       router.push(ensureLocalizedPathname(redirectPath, locale))
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.reactivateAccount.failedTitle,
+      toast.error(dictionary.auth.reactivateAccount.failedTitle, {
         description: error instanceof Error ? error.message : undefined,
       })
     }
@@ -216,14 +210,11 @@ export function ReactivateAccountForm({
       setCountdown(60)
       setTimeout(() => confirmForm.setFocus("otp"), 0)
 
-      toast({
-        title: dictionary.auth.reactivateAccount.codeResent,
+      toast.success(dictionary.auth.reactivateAccount.codeResent, {
         description: dictionary.auth.reactivateAccount.codeResentMessage,
       })
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.reactivateAccount.resendFailed,
+      toast.error(dictionary.auth.reactivateAccount.resendFailed, {
         description:
           error instanceof Error
             ? error.message

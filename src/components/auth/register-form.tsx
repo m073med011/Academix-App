@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -18,9 +18,9 @@ import { ApiClientError, apiClient } from "@/lib/api-client"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button, ButtonLoading } from "@/components/ui/button"
-import { CloudinaryUploader } from "@/components/ui/cloudinary-uploader"
+import { CloudinaryUploader, type CloudinaryUploaderRef } from "@/components/ui/cloudinary-uploader"
 import {
   Form,
   FormControl,
@@ -60,6 +60,7 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
   const [activeStep, setActiveStep] = useState(0)
   const [registeredEmail, setRegisteredEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const uploaderRef = useRef<CloudinaryUploaderRef>(null)
 
   const form = useForm<RegisterFormType>({
     resolver: zodResolver(RegisterSchema),
@@ -117,11 +118,23 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
 
   const handleSubmit = async () => {
     const data = form.getValues()
-    const { name, email, role, password, imageProfileUrl } = data
+    const { name, email, role, password } = data
+    let { imageProfileUrl } = data
 
     setIsSubmitting(true)
 
     try {
+      // Auto-upload the image if a file was selected but not yet uploaded
+      if (uploaderRef.current && !imageProfileUrl) {
+        try {
+          const uploadResult = await uploaderRef.current.upload()
+          imageProfileUrl = uploadResult.secureUrl
+          form.setValue("imageProfileUrl", imageProfileUrl)
+        } catch {
+          // No file selected or upload failed — continue without image
+        }
+      }
+
       const result = await apiClient.post<RegisterResponse>(
         "/auth/register",
         {
@@ -140,8 +153,7 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
         "requiresEmailVerification" in response &&
         response.requiresEmailVerification
       ) {
-        toast({
-          title: dictionary.auth.register.registrationSuccessful,
+        toast.success(dictionary.auth.register.registrationSuccessful, {
           description:
             result.message || dictionary.auth.register.checkEmailMessage,
         })
@@ -152,7 +164,7 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
       }
 
       // If no verification needed, go to auth page
-      toast({ title: dictionary.auth.register.registrationSuccessful })
+      toast.success(dictionary.auth.register.registrationSuccessful)
       if (onSwitchToSignIn) {
         onSwitchToSignIn()
       } else {
@@ -182,15 +194,11 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
           }
         }
 
-        toast({
-          variant: "destructive",
-          title: dictionary.auth.register.registrationFailed,
+        toast.error(dictionary.auth.register.registrationFailed, {
           description: error.message,
         })
       } else {
-        toast({
-          variant: "destructive",
-          title: dictionary.auth.register.registrationFailed,
+        toast.error(dictionary.auth.register.registrationFailed, {
           description:
             error instanceof Error
               ? error.message
@@ -405,6 +413,7 @@ export function RegisterForm({ dictionary, onSwitchToSignIn }: { dictionary: Dic
                 </p>
               </div>
               <CloudinaryUploader
+                ref={uploaderRef}
                 onUploadComplete={handleImageUpload}
                 showTypeSelector={false}
                 defaultResourceType="image"

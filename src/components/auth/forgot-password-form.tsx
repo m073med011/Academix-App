@@ -13,7 +13,7 @@ import { ForgotPasswordSchema } from "@/schemas/forgot-passward-schema"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { ensureRedirectPathname } from "@/lib/utils"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { ButtonLoading } from "@/components/ui/button"
 import {
   Form,
@@ -47,14 +47,11 @@ export function ForgotPasswordForm({
 
   async function onSubmit(_data: ForgotPasswordFormType) {
     try {
-      toast({
-        title: dictionary.auth.forgotPassword.checkEmail,
+      toast.success(dictionary.auth.forgotPassword.checkEmail, {
         description: dictionary.auth.forgotPassword.emailSent,
       })
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: dictionary.auth.forgotPassword.somethingWrong,
+      toast.error(dictionary.auth.forgotPassword.somethingWrong, {
         description: error instanceof Error ? error.message : undefined,
       })
     }

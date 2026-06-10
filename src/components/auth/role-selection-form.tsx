@@ -19,7 +19,7 @@ import { ApiClientError } from "@/lib/api-client"
 import { ensureLocalizedPathname } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -123,8 +123,7 @@ export function RoleSelectionForm({ dictionary }: RoleSelectionFormProps) {
       // Update session with new role
       await update({ role: selectedRole })
 
-      toast({
-        title: dictionary.navigation.roleSelection.successTitle,
+      toast.success(dictionary.navigation.roleSelection.successTitle, {
         description:
           dictionary.navigation.roleSelection.successDescription.replace(
             "{role}",
@@ -153,15 +152,11 @@ export function RoleSelectionForm({ dictionary }: RoleSelectionFormProps) {
       console.error("Role selection error:", error)
 
       if (error instanceof ApiClientError) {
-        toast({
-          variant: "destructive",
-          title: dictionary.navigation.roleSelection.errorTitle,
+        toast.error(dictionary.navigation.roleSelection.errorTitle, {
           description: error.message,
         })
       } else {
-        toast({
-          variant: "destructive",
-          title: dictionary.navigation.roleSelection.errorTitle,
+        toast.error(dictionary.navigation.roleSelection.errorTitle, {
           description:
             error instanceof Error
               ? error.message
