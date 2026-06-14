@@ -1,9 +1,14 @@
 "use client"
 
-import { Eye, LayoutGrid, LayoutList, Search } from "lucide-react"
+import { Eye, LayoutGrid, LayoutList, Search, X } from "lucide-react"
 
 import type { Table } from "@tanstack/react-table"
-import type { DynamicColumn, ViewMode } from "./types"
+import type {
+  CreateButtonConfig,
+  DynamicColumn,
+  DynamicFilter,
+  ViewMode,
+} from "./types"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -16,21 +21,32 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { DynamicTableFacetedFilter } from "./dynamic-table-faceted-filter"
+import { DynamicTableNumberFilter } from "./dynamic-table-number-filter"
+import { deriveFilterOptions } from "./utils"
 
 interface DynamicTableToolbarProps<T extends Record<string, unknown>> {
   table: Table<T>
+  data: T[]
   columns: DynamicColumn<T>[]
+  searchable: boolean
   searchColumn: string
   searchPlaceholder?: string
+  filters?: DynamicFilter<T>[]
+  createButton?: CreateButtonConfig
   viewMode: ViewMode
   onViewModeChange: (mode: ViewMode) => void
 }
 
 export function DynamicTableToolbar<T extends Record<string, unknown>>({
   table,
+  data,
   columns,
+  searchable,
   searchColumn,
   searchPlaceholder,
+  filters,
+  createButton,
   viewMode,
   onViewModeChange,
 }: DynamicTableToolbarProps<T>) {
@@ -39,8 +55,10 @@ export function DynamicTableToolbar<T extends Record<string, unknown>>({
     searchPlaceholder ??
     `Search by ${searchColumnDef?.label ?? searchColumn}...`
 
+  const isFiltered = table.getState().columnFilters.length > 0
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {/* View Mode Toggle */}
       <ToggleGroup
         type="single"
@@ -103,23 +121,88 @@ export function DynamicTableToolbar<T extends Record<string, unknown>>({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      {/* Dynamic Filters */}
+      {filters?.map((filter) => {
+        const column = table.getColumn(filter.column)
+        if (!column) return null
+
+        const label =
+          filter.label ??
+          columns.find((c) => c.key === filter.column)?.label ??
+          filter.column
+
+        if (filter.type === "select" || filter.type === "multi-select") {
+          const options =
+            filter.options ?? deriveFilterOptions(data, filter.column)
+          return (
+            <DynamicTableFacetedFilter
+              key={filter.column}
+              column={column}
+              title={label}
+              options={options}
+              multiple={filter.type === "multi-select"}
+            />
+          )
+        }
+
+        return (
+          <DynamicTableNumberFilter
+            key={filter.column}
+            column={column}
+            title={label}
+            mode={filter.type === "number" ? "number" : "range"}
+            min={filter.min}
+            max={filter.max}
+          />
+        )
+      })}
+
+      {/* Reset filters */}
+      {isFiltered && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 px-2 lg:px-3"
+          onClick={() => table.resetColumnFilters()}
+        >
+          Reset
+          <X className="ms-2 h-4 w-4" />
+        </Button>
+      )}
+
       {/* Search Input */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          name={`${searchColumn}-table-search`}
-          autoComplete="off"
-          placeholder={placeholder}
-          className="ps-9 w-[200px] lg:w-[280px] border border-input bg-background"
-          value={
-            (table.getColumn(searchColumn)?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn(searchColumn)?.setFilterValue(event.target.value)
-          }
-        />
-      </div>
+      {searchable && (
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            name={`${searchColumn}-table-search`}
+            autoComplete="off"
+            placeholder={placeholder}
+            className="ps-9 w-[200px] lg:w-[280px] border border-input bg-background"
+            value={
+              (table.getColumn(searchColumn)?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn(searchColumn)?.setFilterValue(event.target.value)
+            }
+          />
+        </div>
+      )}
+
+      {/* Create / primary action */}
+      {createButton && (
+        <Button
+          variant={createButton.variant ?? "default"}
+          size="sm"
+          className="h-9"
+          disabled={createButton.disabled}
+          onClick={createButton.onClick}
+        >
+          {createButton.icon && <createButton.icon className="me-2 h-4 w-4" />}
+          {createButton.label}
+        </Button>
+      )}
     </div>
   )
 }

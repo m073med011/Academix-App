@@ -106,7 +106,7 @@ export function StoreView({
       <StoreHero dictionary={dictionary} />
 
       {/* Main Content */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
+      <div className="w-full p-[2%]">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <StoreFilters
             dictionary={dictionary}

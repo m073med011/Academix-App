@@ -47,9 +47,9 @@ export function Toaster({ ...props }: ToasterProps) {
           title: "group-[.toast]:text-sm group-[.toast]:font-medium group-[.toast]:whitespace-nowrap",
           description: "group-[.toast]:text-xs group-[.toast]:text-muted-foreground group-[.toast]:whitespace-nowrap group-[.toast]:!text-inherit group-[.toast]:opacity-90",
           actionButton:
-            "group-[.toast]:!bg-primary group-[.toast]:!text-primary-foreground group-[.toast]:!rounded-md group-[.toast]:!px-3.5 group-[.toast]:!py-1.5 group-[.toast]:!h-auto group-[.toast]:!text-xs group-[.toast]:!font-semibold hover:group-[.toast]:!bg-primary/90 transition-colors",
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:!rounded-md group-[.toast]:px-3 group-[.toast]:py-1 group-[.toast]:h-auto group-[.toast]:text-xs group-[.toast]:font-medium",
           cancelButton:
-            "group-[.toast]:!bg-muted group-[.toast]:!text-muted-foreground group-[.toast]:!rounded-md group-[.toast]:!px-3.5 group-[.toast]:!py-1.5 group-[.toast]:!h-auto group-[.toast]:!text-xs group-[.toast]:!font-semibold hover:group-[.toast]:!bg-muted/80 transition-colors",
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground group-[.toast]:!rounded-md group-[.toast]:px-3 group-[.toast]:py-1 group-[.toast]:h-auto group-[.toast]:text-xs group-[.toast]:font-medium",
         },
       }}
       {...props}

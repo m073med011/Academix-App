@@ -13,10 +13,18 @@ import {
 import type {
   ColumnDef,
   ColumnFiltersState,
+  FilterFn,
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table"
-import type { DynamicColumn, DynamicTableProps, ViewMode } from "./types"
+import type {
+  DynamicColumn,
+  DynamicFilter,
+  DynamicTableProps,
+  ViewMode,
+} from "./types"
+
+import { cn } from "@/lib/utils"
 
 import {
   Card,
@@ -41,16 +49,66 @@ import { renderCell } from "./cell-renderers"
 import { DynamicTableCardView } from "./dynamic-table-card"
 import { DynamicTableRowActions } from "./dynamic-table-row-actions"
 import { DynamicTableToolbar } from "./dynamic-table-toolbar"
+import { getRowColorClass } from "./utils"
+
+// Alignment helpers shared by header and cells.
+const alignClasses = {
+  start: "text-start",
+  center: "text-center",
+  end: "text-end",
+} as const
+
+// Range filter: keeps rows whose numeric value falls within [min, max].
+// Either bound may be undefined (open-ended).
+const numberRangeFilter: FilterFn<Record<string, unknown>> = (
+  row,
+  columnId,
+  filterValue
+) => {
+  const [min, max] = (filterValue ?? []) as [
+    number | undefined,
+    number | undefined,
+  ]
+  const value = Number(row.getValue(columnId))
+  if (Number.isNaN(value)) return false
+  if (min !== undefined && value < min) return false
+  if (max !== undefined && value > max) return false
+  return true
+}
+
+// Exact-number filter.
+const numberEqualsFilter: FilterFn<Record<string, unknown>> = (
+  row,
+  columnId,
+  filterValue
+) => {
+  if (filterValue === undefined || filterValue === null) return true
+  return Number(row.getValue(columnId)) === Number(filterValue)
+}
+
+// Build a lookup so we can attach the right filterFn to each column.
+function buildFilterMap<T extends Record<string, unknown>>(
+  filters: DynamicFilter<T>[] | undefined
+) {
+  const map = new Map<string, DynamicFilter<T>>()
+  filters?.forEach((filter) => map.set(filter.column, filter))
+  return map
+}
 
 export function DynamicTable<T extends Record<string, unknown>>({
   data,
   columns,
   actions,
   showCheckbox = false,
+  searchable = true,
   searchColumn,
   searchPlaceholder,
+  filters,
+  createButton,
+  colorize = false,
+  colorizeColumn,
+  colors,
   defaultView = "table",
-  pageSizeOptions = [10, 20, 30, 40, 50],
   defaultPageSize = 10,
   title = "Data Table",
   noResultsMessage = "No results.",
@@ -77,6 +135,14 @@ export function DynamicTable<T extends Record<string, unknown>>({
 
   // Determine search column (default to first column)
   const effectiveSearchColumn = searchColumn ?? columns[0]?.key ?? ""
+
+  // Determine which column drives contextual coloring.
+  const effectiveColorizeColumn =
+    colorizeColumn ??
+    columns.find((col) => col.component === "badge")?.key ??
+    columns[0]?.key
+
+  const filterMap = useMemo(() => buildFilterMap(filters), [filters])
 
   // Build TanStack columns from DynamicColumn config
   const tableColumns = useMemo<ColumnDef<T>[]>(() => {
@@ -114,18 +180,43 @@ export function DynamicTable<T extends Record<string, unknown>>({
 
     // Add data columns
     columns.forEach((col) => {
+      const align = col.align ?? "start"
+      const filter = filterMap.get(col.key)
+      // Choose a filter function matching the column's filter config.
+      const filterFn =
+        filter?.type === "number-range"
+          ? (numberRangeFilter as FilterFn<T>)
+          : filter?.type === "number"
+            ? (numberEqualsFilter as FilterFn<T>)
+            : filter?.type === "multi-select"
+              ? "arrIncludesSome"
+              : filter?.type === "select"
+                ? "equalsString"
+                : col.key === effectiveSearchColumn
+                  ? "includesString"
+                  : undefined
+
       cols.push({
         id: col.key,
         accessorKey: col.key,
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={col.label} />
+          <DataTableColumnHeader
+            column={column}
+            title={col.label}
+            className={alignClasses[align]}
+          />
         ),
         cell: ({ row }) => {
           const value = row.getValue(col.key)
-          return renderCell(value, row.original, col)
+          return (
+            <div className={alignClasses[align]}>
+              {renderCell(value, row.original, col)}
+            </div>
+          )
         },
         enableSorting: col.sortable !== false,
         enableHiding: col.enableHiding !== false,
+        ...(filterFn ? { filterFn } : {}),
       })
     })
 
@@ -143,7 +234,7 @@ export function DynamicTable<T extends Record<string, unknown>>({
     }
 
     return cols
-  }, [columns, actions, showCheckbox])
+  }, [columns, actions, showCheckbox, filterMap, effectiveSearchColumn])
 
   const table = useReactTable({
     data,
@@ -188,9 +279,13 @@ export function DynamicTable<T extends Record<string, unknown>>({
         <CardTitle>{title}</CardTitle>
         <DynamicTableToolbar
           table={table}
+          data={data}
           columns={columns}
+          searchable={searchable}
           searchColumn={effectiveSearchColumn}
           searchPlaceholder={searchPlaceholder}
+          filters={filters}
+          createButton={createButton}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
@@ -220,21 +315,32 @@ export function DynamicTable<T extends Record<string, unknown>>({
               </TableHeader>
               <TableBody>
                 {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                  table.getRowModel().rows.map((row) => {
+                    const colorClass = colorize
+                      ? getRowColorClass(
+                          effectiveColorizeColumn
+                            ? row.original[effectiveColorizeColumn]
+                            : undefined,
+                          colors
+                        )
+                      : ""
+                    return (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                        className={cn(colorClass)}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    )
+                  })
                 ) : (
                   <TableRow>
                     <TableCell
@@ -255,6 +361,10 @@ export function DynamicTable<T extends Record<string, unknown>>({
             actions={actions}
             showCheckbox={showCheckbox}
             gridCols={cardGridCols}
+            colorize={colorize}
+            colorizeColumn={effectiveColorizeColumn}
+            colors={colors}
+            noResultsMessage={noResultsMessage}
           />
         )}
       </CardContent>

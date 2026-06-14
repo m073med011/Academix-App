@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { renderCell } from "./cell-renderers"
 import { DynamicTableRowActions } from "./dynamic-table-row-actions"
+import { getRowColorClass } from "./utils"
 
 interface DynamicTableCardViewProps<T extends Record<string, unknown>> {
   table: Table<T>
@@ -16,6 +17,10 @@ interface DynamicTableCardViewProps<T extends Record<string, unknown>> {
   actions?: ActionItem<T>[]
   showCheckbox?: boolean
   gridCols?: 1 | 2 | 3 | 4
+  colorize?: boolean
+  colorizeColumn?: keyof T & string
+  colors?: Record<string, string>
+  noResultsMessage?: string
 }
 
 const gridColsClasses = {
@@ -31,6 +36,10 @@ export function DynamicTableCardView<T extends Record<string, unknown>>({
   actions,
   showCheckbox = false,
   gridCols = 3,
+  colorize = false,
+  colorizeColumn,
+  colors,
+  noResultsMessage = "No results.",
 }: DynamicTableCardViewProps<T>) {
   const rows = table.getRowModel().rows
   const visibleColumns = table.getVisibleFlatColumns()
@@ -38,7 +47,7 @@ export function DynamicTableCardView<T extends Record<string, unknown>>({
   if (!rows.length) {
     return (
       <div className="flex items-center justify-center h-32 text-muted-foreground">
-        No results.
+        {noResultsMessage}
       </div>
     )
   }
@@ -47,13 +56,20 @@ export function DynamicTableCardView<T extends Record<string, unknown>>({
     <div className={cn("grid gap-4 p-4", gridColsClasses[gridCols])}>
       {rows.map((row) => {
         const data = row.original
+        const colorClass = colorize
+          ? getRowColorClass(
+              colorizeColumn ? data[colorizeColumn] : undefined,
+              colors
+            )
+          : ""
 
         return (
           <Card
             key={row.id}
             className={cn(
               "relative transition-all hover:shadow-md",
-              row.getIsSelected() && "ring-2 ring-primary"
+              row.getIsSelected() && "ring-2 ring-primary",
+              colorClass
             )}
           >
             <CardContent className="p-4">

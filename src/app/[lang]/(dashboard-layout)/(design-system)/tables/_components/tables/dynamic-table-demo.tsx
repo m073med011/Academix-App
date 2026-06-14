@@ -8,37 +8,36 @@ import type {
   ActionItem,
   BadgeVariant,
   DynamicColumn,
+  DynamicFilter,
 } from "./dynamic-table/types"
 
 import { sampleUsers } from "../../_data/sample-users"
 
 import { DynamicTable } from "./dynamic-table"
 
-// Column configuration
+// Column configuration. Each column names the `component` used to render it.
 const userColumns: DynamicColumn<SampleUser>[] = [
   {
     key: "name",
     label: "Name",
-    type: "text",
-    sortable: true,
+    component: "text",
   },
   {
     key: "avatar",
     label: "Avatar",
-    type: "avatar",
+    component: "avatar",
+    sortable: false,
     imageSize: { width: 32, height: 32 },
   },
   {
     key: "email",
     label: "Email",
-    type: "email",
-    sortable: true,
+    component: "email",
   },
   {
     key: "role",
     label: "Role",
-    type: "badge",
-    sortable: true,
+    component: "badge",
     getBadgeVariant: (value): BadgeVariant => {
       switch (value) {
         case "Manager":
@@ -55,8 +54,7 @@ const userColumns: DynamicColumn<SampleUser>[] = [
   {
     key: "status",
     label: "Status",
-    type: "badge",
-    sortable: true,
+    component: "badge",
     getBadgeVariant: (value): BadgeVariant => {
       switch (value) {
         case "Active":
@@ -73,35 +71,51 @@ const userColumns: DynamicColumn<SampleUser>[] = [
   {
     key: "salary",
     label: "Salary",
-    type: "currency",
-    sortable: true,
+    component: "currency",
+    align: "end",
     currencySymbol: "$",
   },
   {
     key: "percentage",
     label: "Performance",
-    type: "percentage",
-    sortable: true,
+    component: "percentage",
+    align: "end",
   },
   {
     key: "isVerified",
     label: "Verified",
-    type: "toggle",
+    component: "toggle",
+    sortable: false,
   },
   {
     key: "joinedAt",
     label: "Joined",
-    type: "date",
-    sortable: true,
+    component: "date",
     hidden: true, // Hidden by default
   },
   {
     key: "document",
     label: "Document",
-    type: "file",
+    component: "file",
+    sortable: false,
     hidden: true, // Hidden by default
   },
 ]
+
+// Table-level filters (kept separate from column defs).
+// Select options are auto-derived from the data when not provided.
+const userFilters: DynamicFilter<SampleUser>[] = [
+  { column: "role", type: "multi-select" },
+  { column: "status", type: "multi-select" },
+  { column: "salary", type: "number-range", label: "Salary", min: 0 },
+]
+
+// Contextual row colors keyed by status value (overrides built-in defaults).
+const statusColors: Record<string, string> = {
+  Active: "bg-green-100 text-green-700 hover:bg-green-200",
+  Pending: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+  Inactive: "bg-red-100 text-red-700 hover:bg-red-200",
+}
 
 // Action handlers
 const handleEdit = (user: SampleUser) => {
@@ -143,9 +157,14 @@ export function DynamicTableDemo() {
       data={sampleUsers}
       columns={userColumns}
       actions={userActions}
-      showCheckbox={true}
+      showCheckbox
+      searchable
       searchColumn="name"
       searchPlaceholder="Search by name..."
+      filters={userFilters}
+      colorize
+      colorizeColumn="status"
+      colors={statusColors}
       defaultView="table"
       title="Dynamic Table"
       cardGridCols={3}

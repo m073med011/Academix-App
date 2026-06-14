@@ -71,7 +71,7 @@ export function renderCell<T extends Record<string, unknown>>(
     )
   }
 
-  switch (column.type) {
+  switch (column.component ?? "text") {
     case "text":
       return <span className="line-clamp-2">{String(value)}</span>
 
