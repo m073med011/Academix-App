@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { Course, CourseFilterParams, CoursePagination } from "@/types/api"
 
-import { useCourses } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_hooks/use-courses"
+import { useCourses } from "@/app/[lang]/(dashboard-layout)/account/courses/_hooks/use-courses"
 import { StoreFilters } from "./_components/store-filters"
 import { StoreHero } from "./_components/store-hero"
 import { StoreList } from "./_components/store-list"

@@ -45,7 +45,9 @@ export function CourseDetailsView({
   useEffect(() => {
     const initStores = async () => {
       try {
-        await Promise.all([initializeCart(), initializePurchasedCourses()])
+        if (session) {
+          await Promise.all([initializeCart(), initializePurchasedCourses()])
+        }
       } catch (error) {
         console.error("Failed to initialize stores:", error)
       } finally {
@@ -53,7 +55,7 @@ export function CourseDetailsView({
       }
     }
     initStores()
-  }, [initializeCart, initializePurchasedCourses])
+  }, [session, initializeCart, initializePurchasedCourses])
 
   // Check if user has access to full course content
   const isOwner =

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { useCartStore } from "@/stores/cart-store"
 import { usePurchasedCoursesStore } from "@/stores/purchased-courses-store"
 import { Check, CheckCircle2, ShoppingCart } from "lucide-react"
@@ -11,6 +12,7 @@ import type { ComponentProps } from "react"
 import { ApiClientError } from "@/lib/api-client"
 
 import { useSettings } from "@/hooks/use-settings"
+import { useAuthCheck } from "@/hooks/use-auth-check"
 import { Button } from "@/components/ui/button"
 
 interface AddToCartButtonProps extends Omit<
@@ -28,7 +30,10 @@ export function AddToCartButton({
   ...props
 }: AddToCartButtonProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { settings } = useSettings()
+  const { status } = useSession()
+  const { requireAuth, redirectToSignIn } = useAuthCheck()
   const addToCart = useCartStore((state) => state.addToCart)
   const removeFromCart = useCartStore((state) => state.removeFromCart)
   const isInCart = useCartStore((state) => state.isInCart)
@@ -43,10 +48,14 @@ export function AddToCartButton({
   const alreadyPurchased = isPurchased(courseId)
 
   useEffect(() => {
-    initializePurchasedCourses()
-  }, [initializePurchasedCourses])
+    if (status === "authenticated") {
+      initializePurchasedCourses()
+    }
+  }, [status, initializePurchasedCourses])
 
   const handleClick = async () => {
+    if (!requireAuth()) return
+
     try {
       if (inCart) {
         await removeFromCart(courseId)
@@ -54,10 +63,9 @@ export function AddToCartButton({
         await addToCart(courseId)
       }
     } catch (error) {
-      // Redirect to login page if user is not authenticated
+      // Fallback redirect if token expired during the request
       if (error instanceof ApiClientError && error.isUnauthorized()) {
-        const locale = settings.locale || "en"
-        router.push(`/${locale}/auth`)
+        redirectToSignIn()
         return
       }
       console.error("Cart operation failed:", error)
@@ -71,7 +79,7 @@ export function AddToCartButton({
         variant="outline"
         size={size}
         className={className}
-        onClick={() => router.push("/pages/account/profile?tab=purchased")}
+        onClick={() => router.push("/account/profile?tab=purchased")}
         {...props}
       >
         <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />

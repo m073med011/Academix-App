@@ -7,7 +7,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { Loader2, Plus } from "lucide-react"
 
-import type { CloudinaryUploadResult } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_services/cloudinary-service"
+import type { CloudinaryUploadResult } from "@/app/[lang]/(dashboard-layout)/account/courses/_services/cloudinary-service"
 import type { CloudinaryUploaderRef } from "@/components/ui/cloudinary-uploader"
 
 import { Button, ButtonLoading } from "@/components/ui/button"
@@ -183,7 +183,7 @@ export function CreateOrganizationModal({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-             >
+          >
             {/* Scrollable Content Area */}
             <ScrollArea>
               <div className="space-y-6">

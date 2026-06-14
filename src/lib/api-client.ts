@@ -1,4 +1,5 @@
 import type { ApiError, ApiResponse } from "@/types/api"
+import { signOut } from "next-auth/react"
 
 // API Client Configuration
 const API_BASE_URL =
@@ -94,10 +95,14 @@ class ApiClient {
         headers,
       })
 
-      // Handle 401 - NextAuth handles refresh automatically on the server side
-      // If we get 401 here, it means the session is invalid or refresh failed on server
+      // Handle 401 - Token expired and refresh failed
+      // Clear cached token and sign the user out automatically
       if (response.status === 401 && !skipAuth) {
-        // We could trigger a sign out here or just throw error
+        this.cachedToken = null
+        this.tokenExpiresAt = 0
+        if (typeof window !== "undefined") {
+          signOut({ callbackUrl: "/auth" })
+        }
         throw new ApiClientError("Session expired. Please login again.", 401)
       }
 
