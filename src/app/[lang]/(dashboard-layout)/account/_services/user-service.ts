@@ -46,7 +46,7 @@ export const userService = {
    * Change user password
    */
   async changePassword(data: ChangePasswordRequest): Promise<void> {
-    const response = await apiClient.post<void>("/users/change-password", data)
+    const response = await apiClient.patch<void>("/users/password", data)
 
     if (!response.success) {
       throw new ApiClientError("Failed to change password", 400)

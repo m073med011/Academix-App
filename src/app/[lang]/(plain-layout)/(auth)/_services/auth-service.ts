@@ -119,7 +119,7 @@ export const authService = {
    * Request password reset - sends OTP to email
    */
   async forgotPassword(data: ForgotPasswordRequest): Promise<void> {
-    const response = await apiClient.post<void>("/auth/forgot-password", data, {
+    const response = await apiClient.post<void>("/auth/password-reset-request", data, {
       skipAuth: true,
     })
 
@@ -132,7 +132,7 @@ export const authService = {
    * Reset password with OTP verification
    */
   async resetPassword(data: ResetPasswordRequest): Promise<void> {
-    const response = await apiClient.post<void>("/auth/reset-password", data, {
+    const response = await apiClient.post<void>("/auth/password-reset", data, {
       skipAuth: true,
     })
 
@@ -154,7 +154,7 @@ export const authService = {
       token: string
       refreshToken: string
       user: User
-    }>("/auth/verify-email", data, {
+    }>("/auth/email-verification", data, {
       skipAuth: true,
     })
 
@@ -175,7 +175,7 @@ export const authService = {
    * Enable 2FA for user account
    */
   async enable2FA(password: string): Promise<void> {
-    const response = await apiClient.post<void>("/auth/enable-2fa", {
+    const response = await apiClient.post<void>("/auth/2fa/enable", {
       password,
     })
 
@@ -188,7 +188,7 @@ export const authService = {
    * Confirm 2FA setup with OTP
    */
   async confirm2FA(otp: string): Promise<void> {
-    const response = await apiClient.post<void>("/auth/confirm-2fa", { otp })
+    const response = await apiClient.post<void>("/auth/2fa/confirm", { otp })
 
     if (!response.success) {
       throw new ApiClientError("Failed to confirm 2FA", 400)
@@ -199,7 +199,7 @@ export const authService = {
    * Disable 2FA for user account
    */
   async disable2FA(): Promise<void> {
-    const response = await apiClient.post<void>("/auth/disable-2fa")
+    const response = await apiClient.post<void>("/auth/2fa/disable")
 
     if (!response.success) {
       throw new ApiClientError("Failed to disable 2FA", 400)

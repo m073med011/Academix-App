@@ -74,7 +74,7 @@ export const paymentService = {
         valid: boolean
         discountAmount: number
         message?: string
-      }>("/discounts/validate", {
+      }>("/discounts/validation", {
         code,
         courseIds,
       })
