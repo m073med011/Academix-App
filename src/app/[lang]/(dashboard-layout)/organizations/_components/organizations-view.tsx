@@ -18,6 +18,7 @@ import {
 
 import { useRole } from "@/hooks/use-role"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { DynamicTable } from "../../(design-system)/tables/_components/tables/dynamic-table"
 import { organizationService } from "../_services/organization.service"
 import { CreateOrganizationModal } from "./createorganization-modal"
@@ -45,6 +46,7 @@ type OrganizationTableRow = {
   // "my" = organizations the user belongs to, "public" = discoverable orgs.
   // Currently always "my"; the Public source isn't wired yet.
   scope: "my" | "public"
+  actions?: any
 }
 
 export default function OrganizationsView({
@@ -163,6 +165,19 @@ export default function OrganizationsView({
         component: "text",
         hidden: true,
         enableHiding: false,
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        component: "custom",
+        render: (_, row) => (
+          <Link href={`/organizations/${row.originalOrgId}/dashboard`}>
+            <Button variant="outline" size="sm">
+              Dashboard
+            </Button>
+          </Link>
+        ),
+        sortable: false,
       },
     ],
     [dictionary]

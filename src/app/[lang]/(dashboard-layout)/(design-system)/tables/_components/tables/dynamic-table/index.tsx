@@ -328,7 +328,9 @@ export function DynamicTable<T extends Record<string, unknown>>({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
-                        className={cn(colorClass)}
+                        className={cn(
+                          row.getIsSelected() ? colorClass : "hover:bg-transparent"
+                        )}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
