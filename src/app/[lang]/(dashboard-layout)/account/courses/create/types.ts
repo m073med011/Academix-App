@@ -23,6 +23,10 @@ export interface CourseFormData {
   thumbnailUrl?: string
   promoVideoUrl?: string
   brandColor: string
+
+  // Org integration
+  organizationId?: string
+  courseType?: string
 }
 
 export interface CourseModule {
@@ -90,4 +94,6 @@ export const initialCourseFormData: CourseFormData = {
   thumbnailUrl: undefined,
   promoVideoUrl: undefined,
   brandColor: "#137fec",
+  organizationId: undefined,
+  courseType: undefined,
 }

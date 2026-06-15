@@ -34,6 +34,8 @@ interface WizardContainerProps {
   dictionary: DictionaryType
   locale: LocaleType
   initialStep: number
+  organizationId?: string
+  courseType?: string
 }
 
 const TOTAL_STEPS = 5
@@ -43,7 +45,9 @@ function getStepCompleteness(formData: CourseFormData) {
   const basic = Boolean(formData.title.trim() && formData.description.trim())
   const curriculum = formData.modules.length > 0
   const pricing =
-    formData.enrollmentType === "free" || formData.price > 0
+    formData.courseType === "organization" ||
+    formData.enrollmentType === "free" ||
+    formData.price > 0
   const media = Boolean(formData.thumbnailUrl)
   return {
     1: basic,
@@ -71,6 +75,7 @@ function getBlockingHint(
         return "Add at least one module to continue."
       return undefined
     case 3:
+      if (formData.courseType === "organization") return undefined
       if (formData.enrollmentType !== "free" && !(formData.price > 0))
         return "Set a price or mark the course as free."
       return undefined
@@ -95,19 +100,25 @@ export function WizardContainer({
   dictionary,
   locale,
   initialStep,
+  organizationId,
+  courseType,
 }: WizardContainerProps) {
   const router = useRouter()
   const clampedInitialStep = Math.min(Math.max(initialStep, 1), TOTAL_STEPS)
+
   const [currentStep, setCurrentStep] = useState(clampedInitialStep)
-  // Steps the user has actually been on. Used to gate the Steps primitive's
-  // jump behavior: a step is clickable only if it's already been visited or
-  // its requirements are met.
   const [visitedSteps, setVisitedSteps] = useState<Set<number>>(
     () => new Set(Array.from({ length: clampedInitialStep }, (_, i) => i + 1))
   )
-  const [formData, setFormData] = useState<CourseFormData>(initialCourseFormData)
+  const [formData, setFormData] = useState<CourseFormData>(() => ({
+    ...initialCourseFormData,
+    ...(organizationId && { organizationId }),
+    ...(courseType && { courseType }),
+  }))
   const [isPublishing, setIsPublishing] = useState(false)
   const isPublishingRef = useRef(false)
+
+  const isOrgCourse = formData.courseType === "organization"
 
   // Auto-save drifting indicator (no-op hook).
   const [savedAt, setSavedAt] = useState<Date | null>(null)
@@ -144,8 +155,8 @@ export function WizardContainer({
 
   // Local view-model for the Steps rail. Kept tiny — the Steps primitive
   // owns rendering; we only feed labels, captions, and completeness.
-  const railSteps = useMemo(
-    () => [
+  const railSteps = useMemo(() => {
+    const steps = [
       {
         number: WIZARD_STEPS.BASIC_INFO,
         label: tSteps.basicInfo,
@@ -167,19 +178,25 @@ export function WizardContainer({
       {
         number: WIZARD_STEPS.MEDIA,
         label: tSteps.media,
-        description: "Cover image required",
+        description: "Thumbnail & promo",
         complete: completeness[4],
       },
       {
         number: WIZARD_STEPS.REVIEW,
         label: tSteps.review,
-        description: "Final check & publish",
+        description: "Confirm & publish",
         complete: completeness[5],
       },
-    ],
-    [tSteps, completeness]
-  )
+    ]
 
+    if (isOrgCourse) {
+      return steps.filter((s) => s.number !== WIZARD_STEPS.PRICING)
+    }
+
+    return steps
+  }, [tSteps, completeness, isOrgCourse])
+
+  const currentRailIndex = railSteps.findIndex((s) => s.number === currentStep)
   const currentRailStep = railSteps.find((s) => s.number === currentStep)
 
   const updateFormData = (data: Partial<CourseFormData>) => {
@@ -204,27 +221,33 @@ export function WizardContainer({
     )
   }
 
-  // Steps primitive is 0-indexed; the wizard is 1-indexed. This is the only
-  // place we cross that boundary.
-  const handleStepsChange = (zeroIndexed: number) => {
-    const target = zeroIndexed + 1
-    if (target === currentStep) return
-    const railTarget = railSteps.find((s) => s.number === target)
-    const isVisited = visitedSteps.has(target)
-    const isComplete = railTarget?.complete ?? false
-    // Per spec: jumping is only allowed into a step the user has already
-    // visited or whose requirements are already satisfied. Otherwise
-    // navigation must go through Back / Continue so validation can gate it.
-    if (!isVisited && !isComplete) return
-    goToStep(target)
+  const handleStepsChange = (index: number) => {
+    if (index >= 0 && index < railSteps.length) {
+      const targetStep = railSteps[index].number
+      if (targetStep === currentStep) return
+      
+      const isVisited = visitedSteps.has(targetStep)
+      const isComplete = railSteps[index].complete ?? false
+      
+      // Per spec: jumping is only allowed into a step the user has already
+      // visited or whose requirements are already satisfied. Otherwise
+      // navigation must go through Back / Continue so validation can gate it.
+      if (!isVisited && !isComplete) return
+      
+      goToStep(targetStep)
+    }
   }
 
   const handleNext = () => {
-    if (currentStep < TOTAL_STEPS) goToStep(currentStep + 1)
+    if (currentRailIndex !== -1 && currentRailIndex < railSteps.length - 1) {
+      goToStep(railSteps[currentRailIndex + 1].number)
+    }
   }
 
   const handleBack = () => {
-    if (currentStep > 1) goToStep(currentStep - 1)
+    if (currentRailIndex > 0) {
+      goToStep(railSteps[currentRailIndex - 1].number)
+    }
   }
 
   const handlePublish = async () => {
@@ -253,6 +276,8 @@ export function WizardContainer({
         enrollmentEndDate: formData.enrollmentEndDate,
         isPublished: true,
         isOrgPrivate: formData.isPrivate,
+        organizationId: formData.organizationId,
+        courseType: formData.courseType?.toLowerCase(),
         modules: [],
       }
 
@@ -420,10 +445,10 @@ export function WizardContainer({
         rail={
           <div className="hidden lg:block">
             <Steps
-            totalSteps={TOTAL_STEPS}
+            totalSteps={railSteps.length}
             orientation="vertical"
             variant="outline"
-            activeStep={currentStep - 1}
+            activeStep={currentRailIndex}
             onStepChange={handleStepsChange}
             allowJump
           >
@@ -446,8 +471,8 @@ export function WizardContainer({
       }
       actionBar={
         <ActionBar
-          activeStep={currentStep}
-          totalSteps={TOTAL_STEPS}
+          activeStep={currentRailIndex + 1}
+          totalSteps={railSteps.length}
           onBack={handleBack}
           onNext={handleNext}
           onPublish={handlePublish}

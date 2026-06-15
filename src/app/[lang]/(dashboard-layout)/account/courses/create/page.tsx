@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function CreateCoursePage(props: {
   params: Promise<{ lang: LocaleType }>
-  searchParams: Promise<{ step?: string }>
+  searchParams: Promise<{ step?: string; organizationId?: string; courseType?: string }>
 }) {
   const params = await props.params
   const searchParams = await props.searchParams
@@ -23,6 +23,8 @@ export default async function CreateCoursePage(props: {
       dictionary={dictionary}
       locale={params.lang}
       initialStep={currentStep}
+      organizationId={searchParams.organizationId}
+      courseType={searchParams.courseType}
     />
   )
 }

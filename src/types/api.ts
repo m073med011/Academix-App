@@ -311,6 +311,7 @@ export interface CreateCourseRequest {
   brandColor?: string
   enrollmentStartDate?: string
   enrollmentEndDate?: string
+  courseType?: "organization" | "freelancing" | string
 }
 
 export interface UpdateCourseRequest extends Partial<CreateCourseRequest> {}

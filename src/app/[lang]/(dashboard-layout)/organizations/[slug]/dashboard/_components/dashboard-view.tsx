@@ -1,12 +1,17 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
+import { Plus } from "lucide-react"
+
 import { DynamicTable } from "../../../../(design-system)/tables/_components/tables/dynamic-table"
 import type { DynamicColumn } from "../../../../(design-system)/tables/_components/tables/dynamic-table/types"
+import { courseService } from "../../../../account/courses/_services/course-service"
+import type { Course } from "@/types/api"
 
 const TABS = [
   { id: "info", label: "Info" },
@@ -25,6 +30,24 @@ export function DashboardView({ slug }: { slug: string }) {
 
   const activeTab = searchParams.get("tab") || TABS[0].id
 
+  const [courses, setCourses] = useState<Course[]>([])
+  const [loadingCourses, setLoadingCourses] = useState(false)
+
+  useEffect(() => {
+    if (activeTab === "courses") {
+      setLoadingCourses(true)
+      courseService
+        .getCourses({ organizationId: slug })
+        .then((res) => {
+          // The API response might be { data: [...] } or the array itself depending on backend mapping
+          const coursesData = Array.isArray(res) ? res : res.data || []
+          setCourses(coursesData as any)
+        })
+        .catch(console.error)
+        .finally(() => setLoadingCourses(false))
+    }
+  }, [activeTab, slug])
+
   const handleTabChange = (tabId: string) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("tab", tabId)
@@ -32,11 +55,42 @@ export function DashboardView({ slug }: { slug: string }) {
   }
 
   // Placeholder columns and data for the dynamic table
-  const columns: DynamicColumn<any>[] = [
+  const defaultColumns: DynamicColumn<any>[] = [
     { key: "id", label: "ID" },
     { key: "name", label: "Name" },
     { key: "status", label: "Status", component: "badge" },
   ]
+
+  const coursesColumns: DynamicColumn<any>[] = [
+    { key: "title", label: "Title" },
+    { key: "category", label: "Category" },
+    { key: "level", label: "Level", component: "badge" },
+    { 
+      key: "isPublished", 
+      label: "Status", 
+      component: "badge", 
+      render: (val) => (val ? "Published" : "Draft") 
+    },
+  ]
+
+  const tableColumns = activeTab === "courses" ? coursesColumns : defaultColumns
+  const tableData = activeTab === "courses" ? courses : []
+  const tableSearchColumn = activeTab === "courses" ? "title" : "name"
+  const isLoading = activeTab === "courses" ? loadingCourses : false
+
+  const createCourseButton =
+    activeTab === "courses"
+      ? {
+          label: "Add new course",
+          icon: Plus,
+          onClick: () => {
+            const lang = pathname.split("/")[1]
+            router.push(
+              `/${lang}/account/courses/create?organizationId=${slug}&courseType=organization`
+            )
+          },
+        }
+      : undefined
 
   return (
     <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
@@ -77,13 +131,15 @@ export function DashboardView({ slug }: { slug: string }) {
           </Card>
         ) : (
           <DynamicTable
-            data={[]}
-            columns={columns}
+            data={tableData}
+            columns={tableColumns}
             title={`${TABS.find((t) => t.id === activeTab)?.label} List`}
             searchable
-            searchColumn="name"
+            searchColumn={tableSearchColumn}
             searchPlaceholder={`Search ${activeTab}...`}
             noResultsMessage={`No ${activeTab} found.`}
+            createButton={createCourseButton}
+            isLoading={isLoading}
           />
         )}
       </div>

@@ -53,6 +53,26 @@ export function PricingStep({
     },
   ]
 
+  if (formData.courseType === "organization") {
+    return (
+      <div className="flex flex-col gap-10">
+        <Section
+          eyebrow="Organization Course"
+          caption="Pricing and access are managed automatically."
+        >
+          <div className="rounded-md border bg-muted/50 p-6 text-center">
+            <h3 className="text-sm font-medium text-foreground">
+              Organizational Course Settings
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Because this course belongs to an organization, it will automatically be set as private to the organization and free for its members. You do not need to configure enrollment types or prices.
+            </p>
+          </div>
+        </Section>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-10">
       <Section

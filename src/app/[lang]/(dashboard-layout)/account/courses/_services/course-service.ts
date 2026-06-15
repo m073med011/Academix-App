@@ -18,6 +18,7 @@ interface CourseQueryParams {
   isPublished?: boolean
   search?: string
   sort?: string
+  organizationId?: string
 }
 
 // Course service for client-side course operations
@@ -42,6 +43,7 @@ export const courseService = {
       queryParams.set("isPublished", String(params.isPublished))
     if (params.search) queryParams.set("search", params.search)
     if (params.sort) queryParams.set("sort", params.sort)
+    if (params.organizationId) queryParams.set("organizationId", params.organizationId)
 
     const queryString = queryParams.toString()
     const endpoint = `/courses${queryString ? `?${queryString}` : ""}`
