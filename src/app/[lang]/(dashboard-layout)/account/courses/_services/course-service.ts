@@ -137,6 +137,19 @@ export const courseService = {
   },
 
   /**
+   * Delete multiple courses
+   */
+  async deleteCourses(ids: string[]): Promise<void> {
+    const response = await apiClient.delete<void>("/courses", {
+      body: JSON.stringify({ ids }),
+    })
+
+    if (!response.success) {
+      throw new ApiClientError("Failed to delete courses", 400)
+    }
+  },
+
+  /**
    * Enroll in a course
    */
   async enrollInCourse(courseId: string): Promise<void> {

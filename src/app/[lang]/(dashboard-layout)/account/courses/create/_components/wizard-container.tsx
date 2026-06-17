@@ -125,6 +125,33 @@ export function WizardContainer({
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved">("idle")
   const firstRenderRef = useRef(true)
 
+  // Restore draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("course-creation-draft")
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed.formData) {
+          setFormData((prev) => ({
+            ...prev,
+            ...parsed.formData,
+            ...(organizationId && { organizationId }),
+            ...(courseType && { courseType }),
+          }))
+        }
+        if (parsed.visitedSteps) {
+          setVisitedSteps((prev) => {
+            const next = new Set(prev)
+            parsed.visitedSteps.forEach((s: number) => next.add(s))
+            return next
+          })
+        }
+      }
+    } catch (e) {
+      console.error("Failed to restore course draft", e)
+    }
+  }, [organizationId, courseType])
+
   useEffect(() => {
     if (firstRenderRef.current) {
       firstRenderRef.current = false
@@ -133,6 +160,17 @@ export function WizardContainer({
     setSavingState("saving")
     let hideT: NodeJS.Timeout
     const saveT = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          "course-creation-draft",
+          JSON.stringify({
+            formData,
+            visitedSteps: Array.from(visitedSteps),
+          })
+        )
+      } catch (e) {
+        console.error("Failed to save draft to localStorage", e)
+      }
       setSavedAt(new Date())
       setSavingState("saved")
       hideT = setTimeout(() => {
@@ -143,7 +181,7 @@ export function WizardContainer({
       clearTimeout(saveT)
       clearTimeout(hideT)
     }
-  }, [formData])
+  }, [formData, visitedSteps])
 
   const t = dictionary.profilePage.createCourse
   const tSteps = t.steps
@@ -353,6 +391,8 @@ export function WizardContainer({
           modules: modulesWithMaterials,
         })
       }
+
+      localStorage.removeItem("course-creation-draft")
 
       toast.success("Course published successfully!")
       router.push(ensureLocalizedPathname(`/public/course/${courseId}`, locale))

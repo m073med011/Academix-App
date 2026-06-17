@@ -15,4 +15,11 @@ export const organizationService = {
   getOrganizationById: async (id: string) => {
     return apiClient.get<Organization>(`/organizations/${id}`)
   },
+
+  deleteOrganizations: async (ids: string[]) => {
+    return apiClient.delete<{ successful: string[]; failed: { id: string; reason: string }[] }>(
+      "/organizations",
+      { body: JSON.stringify({ ids }) }
+    )
+  },
 }

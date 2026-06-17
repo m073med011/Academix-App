@@ -7,8 +7,8 @@ import type {
   ActionItem,
   BadgeVariant,
   DynamicColumn,
-} from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/tables/dynamic-table/types"
-import { DynamicTable } from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/tables/dynamic-table"
+} from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/types"
+import { DynamicTable } from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components"
 
 // Course type for organization courses
 interface OrganizationCourse {
@@ -17,7 +17,7 @@ interface OrganizationCourse {
   status: "Active" | "Pending" | "Archived"
   enrollees: number
   createdDate: string
-  [key: string]: any   
+  [key: string]: any
 }
 
 // Sample data matching the mockup

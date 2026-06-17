@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Skeleton } from "@/components/ui/skeleton"
 import { renderCell } from "./cell-renderers"
-import { DynamicTableRowActions } from "./dynamic-table-row-actions"
+import { DynamicTableRowActions } from "./table-row-actions"
 import { getRowColorClass } from "./utils"
 
 interface DynamicTableCardViewProps<T extends Record<string, unknown>> {
@@ -21,6 +22,7 @@ interface DynamicTableCardViewProps<T extends Record<string, unknown>> {
   colorizeColumn?: keyof T & string
   colors?: Record<string, string>
   noResultsMessage?: string
+  isLoading?: boolean
 }
 
 const gridColsClasses = {
@@ -40,9 +42,37 @@ export function DynamicTableCardView<T extends Record<string, unknown>>({
   colorizeColumn,
   colors,
   noResultsMessage = "No results.",
+  isLoading = false,
 }: DynamicTableCardViewProps<T>) {
   const rows = table.getRowModel().rows
   const visibleColumns = table.getVisibleFlatColumns()
+
+  if (isLoading) {
+    return (
+      <div className={cn("grid gap-4 p-4", gridColsClasses[gridCols])}>
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Card key={`skeleton-card-${index}`} className="relative transition-all">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                {showCheckbox ? <Skeleton className="h-4 w-4" /> : <div />}
+                {actions && actions.length > 0 && <Skeleton className="h-8 w-8 rounded-md" />}
+              </div>
+              <div className="space-y-3 mt-4">
+                {visibleColumns
+                  .filter((col) => col.id !== "select" && col.id !== "actions")
+                  .map((col) => (
+                    <div key={col.id} className="flex items-center justify-between gap-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   if (!rows.length) {
     return (
@@ -58,9 +88,9 @@ export function DynamicTableCardView<T extends Record<string, unknown>>({
         const data = row.original
         const colorClass = colorize
           ? getRowColorClass(
-              colorizeColumn ? data[colorizeColumn] : undefined,
-              colors
-            )
+            colorizeColumn ? data[colorizeColumn] : undefined,
+            colors
+          )
           : ""
 
         return (

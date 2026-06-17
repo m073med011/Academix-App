@@ -1,5 +1,44 @@
 import type { FilterOption } from "./types"
 
+// Parse an input string into a number or undefined (blank = no bound).
+export function toNumber(value: string): number | undefined {
+  if (value.trim() === "") return undefined
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
+// URL protocols considered safe to place in href/src attributes.
+// Everything else (javascript:, data:, vbscript:, …) is rejected to
+// prevent XSS via caller-supplied values.
+const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"])
+
+// Returns a safe URL string, or null when the value is unusable/unsafe.
+// Relative and root-relative paths (no scheme) are allowed; absolute URLs
+// must use an allow-listed protocol.
+export function sanitizeUrl(value: unknown): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  if (trimmed === "") return null
+
+  const schemeMatch = trimmed.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/)
+  if (schemeMatch) {
+    const protocol = `${schemeMatch[1].toLowerCase()}:`
+    return SAFE_URL_PROTOCOLS.has(protocol) ? trimmed : null
+  }
+
+  // No scheme => relative/root-relative URL, treated as safe.
+  return trimmed
+}
+
+// Validates an email address and rejects values containing characters that
+// could be used for mailto header injection (whitespace, newlines, etc.).
+export function sanitizeEmail(value: unknown): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return null
+  return trimmed
+}
+
 // Built-in contextual color palette. Keys are matched case-insensitively
 // against a row's value, so common status words are colored out of the box.
 // Callers can override or extend this via the `colors` prop.

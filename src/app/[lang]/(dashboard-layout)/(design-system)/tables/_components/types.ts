@@ -1,3 +1,9 @@
+import type {
+  Column,
+  ColumnFiltersState,
+  SortingState,
+  Table,
+} from "@tanstack/react-table"
 import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
@@ -84,6 +90,16 @@ export interface ActionItem<T> {
 // View mode type
 export type ViewMode = "table" | "card"
 
+// User-facing strings. Defaults are English; pass overrides for i18n.
+export interface DynamicTableLabels {
+  actions?: string
+  toggleColumns?: string
+  reset?: string
+  noResults?: string
+  searchPlaceholder?: string
+  rowsSelected?: (selected: number, total: number) => string
+}
+
 // Reusable "create" / primary action button shown in the toolbar.
 export interface CreateButtonConfig {
   // Button label
@@ -91,11 +107,27 @@ export interface CreateButtonConfig {
   // Optional leading icon (lucide-react)
   icon?: LucideIcon
   // Click handler (open a modal, navigate, etc.)
-  onClick: () => void
+  // Optional when a `dialog` config is provided — the table auto-wires the
+  // create button to open the dialog.
+  onClick?: () => void
   // Button variant (default: "default")
   variant?: "default" | "secondary" | "outline" | "ghost" | "destructive"
   // Disable the button
   disabled?: boolean
+}
+
+// Responsive dialog configuration.
+// When provided, the DynamicTable renders a built-in responsive dialog
+// (Dialog on desktop, Drawer on mobile) whose body is the table's `children`.
+export interface DialogConfig {
+  // Controlled open state
+  open: boolean
+  // Callback to toggle the dialog
+  onOpenChange: (open: boolean) => void
+  // Dialog / drawer title
+  title: string
+  // Optional description shown below the title
+  description?: string
 }
 
 // Supported toolbar filter types
@@ -161,10 +193,78 @@ export interface DynamicTableProps<T extends Record<string, unknown>> {
   title?: string
   // No results message
   noResultsMessage?: string
+  // Show a loading state in place of rows (e.g. while fetching server data)
+  isLoading?: boolean
+  // Override the view mode specifically for the loading skeleton
+  loadingView?: ViewMode
   // Unique row identifier key (default: "id")
   rowIdKey?: keyof T & string
   // Enable row selection change callback
   onRowSelectionChange?: (selectedRows: T[]) => void
   // Card grid columns (default: 3)
   cardGridCols?: 1 | 2 | 3 | 4
+  // User-facing string overrides (i18n)
+  labels?: DynamicTableLabels
+  // --- Server-side mode (optional) ---
+  // When true, pagination/sorting/filtering are delegated to the caller and
+  // `data` is treated as the current page only. Provide pageCount/rowCount and
+  // wire the on*Change callbacks to refetch from the server.
+  manualPagination?: boolean
+  manualSorting?: boolean
+  manualFiltering?: boolean
+  // Total page count (required when manualPagination is true)
+  pageCount?: number
+  // Total row count across all pages (server-side row(s)-selected display)
+  rowCount?: number
+  // Notified when pagination state changes (page index / size)
+  onPaginationChange?: (pagination: { pageIndex: number; pageSize: number }) => void
+  // Notified when sorting state changes
+  onSortingChange?: (sorting: SortingState) => void
+  // Notified when column filters change
+  onColumnFiltersChange?: (filters: ColumnFiltersState) => void
+  // Built-in responsive dialog configuration.
+  // When set, the table renders a Dialog (desktop) / Drawer (mobile) whose
+  // body is whatever you pass as `children`.
+  dialog?: DialogConfig
+  // Content rendered inside the built-in dialog (forms, confirm prompts, etc.)
+  children?: ReactNode
+  // Callback when delete selected button is clicked. If provided, a delete button will appear when rows are selected.
+  onDeleteSelected?: (selectedRows: T[]) => void
+}
+
+// ─── Toolbar sub-component props ────────────────────────────────────────────
+
+// Props for the faceted (select / multi-select) filter popover.
+export interface FacetedFilterProps<T> {
+  column?: Column<T, unknown>
+  title: string
+  options: FilterOption[]
+  // Allow selecting multiple values (default: true)
+  multiple?: boolean
+}
+
+// Props for the number / number-range filter popover.
+export interface NumberFilterProps<T> {
+  column?: Column<T, unknown>
+  title: string
+  // "number" = single exact value, "range" = min/max bounds
+  mode?: "number" | "range"
+  min?: number
+  max?: number
+}
+
+// Props for the main toolbar component.
+export interface DynamicTableToolbarProps<T extends Record<string, unknown>> {
+  table: Table<T>
+  data: T[]
+  columns: DynamicColumn<T>[]
+  searchable: boolean
+  searchColumn: string
+  searchPlaceholder?: string
+  filters?: DynamicFilter<T>[]
+  createButton?: CreateButtonConfig
+  viewMode: ViewMode
+  onViewModeChange: (mode: ViewMode) => void
+  labels?: DynamicTableLabels
+  onDeleteSelected?: (selectedRows: T[]) => void
 }

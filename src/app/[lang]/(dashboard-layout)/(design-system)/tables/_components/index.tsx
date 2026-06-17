@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   flexRender,
   getCoreRowModel,
@@ -14,15 +14,11 @@ import type {
   ColumnDef,
   ColumnFiltersState,
   FilterFn,
+  FilterFnOption,
   SortingState,
   VisibilityState,
 } from "@tanstack/react-table"
-import type {
-  DynamicColumn,
-  DynamicFilter,
-  DynamicTableProps,
-  ViewMode,
-} from "./types"
+import type { DynamicFilter, DynamicTableProps, ViewMode } from "./types"
 
 import { cn } from "@/lib/utils"
 
@@ -45,10 +41,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
 import { renderCell } from "./cell-renderers"
-import { DynamicTableCardView } from "./dynamic-table-card"
-import { DynamicTableRowActions } from "./dynamic-table-row-actions"
-import { DynamicTableToolbar } from "./dynamic-table-toolbar"
+import { DynamicTableCardView } from "./table-card"
+import { DynamicTableDialog } from "./table-dialog"
+import { DynamicTableRowActions } from "./table-row-actions"
+import { DynamicTableToolbar } from "./table-toolbar"
 import { getRowColorClass } from "./utils"
 
 // Alignment helpers shared by header and cells.
@@ -95,6 +93,27 @@ function buildFilterMap<T extends Record<string, unknown>>(
   return map
 }
 
+// Resolve the TanStack filter function for a column based on its configured
+// filter type, falling back to text search for the active search column.
+function resolveFilterFn<T extends Record<string, unknown>>(
+  filter: DynamicFilter<T> | undefined,
+  columnKey: string,
+  searchColumn: string
+): FilterFnOption<T> | undefined {
+  switch (filter?.type) {
+    case "number-range":
+      return numberRangeFilter as FilterFn<T>
+    case "number":
+      return numberEqualsFilter as FilterFn<T>
+    case "multi-select":
+      return "arrIncludesSome"
+    case "select":
+      return "equalsString"
+    default:
+      return columnKey === searchColumn ? "includesString" : undefined
+  }
+}
+
 export function DynamicTable<T extends Record<string, unknown>>({
   data,
   columns,
@@ -112,10 +131,26 @@ export function DynamicTable<T extends Record<string, unknown>>({
   defaultPageSize = 10,
   title = "Data Table",
   noResultsMessage = "No results.",
+  isLoading = false,
+  loadingView,
   rowIdKey = "id" as keyof T & string,
   onRowSelectionChange,
   cardGridCols = 3,
+  labels,
+  pageSizeOptions,
+  manualPagination = false,
+  manualSorting = false,
+  manualFiltering = false,
+  pageCount,
+  rowCount,
+  onPaginationChange,
+  onSortingChange,
+  onColumnFiltersChange,
+  dialog,
+  children,
+  onDeleteSelected,
 }: DynamicTableProps<T>) {
+  const resolvedNoResults = labels?.noResults ?? noResultsMessage
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
@@ -143,6 +178,17 @@ export function DynamicTable<T extends Record<string, unknown>>({
     columns[0]?.key
 
   const filterMap = useMemo(() => buildFilterMap(filters), [filters])
+
+  // When a dialog config is provided and the create button lacks its own
+  // onClick handler, auto-wire the button to open the dialog.
+  const resolvedCreateButton = useMemo(() => {
+    if (!createButton) return undefined
+    if (createButton.onClick) return createButton
+    if (dialog) {
+      return { ...createButton, onClick: () => dialog.onOpenChange(true) }
+    }
+    return createButton
+  }, [createButton, dialog])
 
   // Build TanStack columns from DynamicColumn config
   const tableColumns = useMemo<ColumnDef<T>[]>(() => {
@@ -183,18 +229,7 @@ export function DynamicTable<T extends Record<string, unknown>>({
       const align = col.align ?? "start"
       const filter = filterMap.get(col.key)
       // Choose a filter function matching the column's filter config.
-      const filterFn =
-        filter?.type === "number-range"
-          ? (numberRangeFilter as FilterFn<T>)
-          : filter?.type === "number"
-            ? (numberEqualsFilter as FilterFn<T>)
-            : filter?.type === "multi-select"
-              ? "arrIncludesSome"
-              : filter?.type === "select"
-                ? "equalsString"
-                : col.key === effectiveSearchColumn
-                  ? "includesString"
-                  : undefined
+      const filterFn = resolveFilterFn(filter, col.key, effectiveSearchColumn)
 
       cols.push({
         id: col.key,
@@ -224,7 +259,9 @@ export function DynamicTable<T extends Record<string, unknown>>({
     if (actions && actions.length > 0) {
       cols.push({
         id: "actions",
-        header: () => <span className="sr-only">Actions</span>,
+        header: () => (
+          <span className="sr-only">{labels?.actions ?? "Actions"}</span>
+        ),
         cell: ({ row }) => (
           <DynamicTableRowActions row={row} actions={actions} />
         ),
@@ -234,32 +271,84 @@ export function DynamicTable<T extends Record<string, unknown>>({
     }
 
     return cols
-  }, [columns, actions, showCheckbox, filterMap, effectiveSearchColumn])
+  }, [
+    columns,
+    actions,
+    showCheckbox,
+    filterMap,
+    effectiveSearchColumn,
+    labels?.actions,
+  ])
+
+  // Stable row id derived from rowIdKey. Falls back to the row's index so a
+  // missing key never produces a random (and therefore unstable) id, which
+  // would otherwise corrupt selection and React reconciliation.
+  const getRowId = useCallback(
+    (row: T, index: number) => {
+      const id = row[rowIdKey]
+      return id === null || id === undefined ? String(index) : String(id)
+    },
+    [rowIdKey]
+  )
 
   const table = useReactTable({
     data,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: manualPagination
+      ? undefined
+      : getPaginationRowModel(),
+    onSortingChange: (updater) => {
+      setSorting(updater)
+      if (onSortingChange) {
+        onSortingChange(
+          typeof updater === "function" ? updater(sorting) : updater
+        )
+      }
+    },
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    onColumnFiltersChange: (updater) => {
+      setColumnFilters(updater)
+      if (onColumnFiltersChange) {
+        onColumnFiltersChange(
+          typeof updater === "function" ? updater(columnFilters) : updater
+        )
+      }
+    },
+    getFilteredRowModel: manualFiltering ? undefined : getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: (updater) => {
       setRowSelection(updater)
-      // Call callback with selected rows
+      // Notify the caller with the actual selected row objects. Selection keys
+      // are row ids (from getRowId), not array indices, so we resolve them via
+      // a stable id -> row lookup rather than indexing into `data`.
       if (onRowSelectionChange) {
         const newSelection =
           typeof updater === "function" ? updater(rowSelection) : updater
+        const rowById = new Map(
+          data.map((row, index) => [getRowId(row, index), row])
+        )
         const selectedRows = Object.keys(newSelection)
           .filter((key) => newSelection[key as keyof typeof newSelection])
-          .map((key) => data[parseInt(key)])
-          .filter(Boolean)
+          .map((key) => rowById.get(key))
+          .filter((row): row is T => row !== undefined)
         onRowSelectionChange(selectedRows)
       }
     },
-    getRowId: (row) => String(row[rowIdKey] ?? Math.random()),
+    getRowId,
+    manualPagination,
+    manualSorting,
+    manualFiltering,
+    ...(pageCount !== undefined ? { pageCount } : {}),
+    ...(rowCount !== undefined ? { rowCount } : {}),
+    onPaginationChange: onPaginationChange
+      ? (updater) => {
+        const current = table.getState().pagination
+        const next =
+          typeof updater === "function" ? updater(current) : updater
+        onPaginationChange(next)
+      }
+      : undefined,
     state: {
       sorting,
       columnFilters,
@@ -274,6 +363,7 @@ export function DynamicTable<T extends Record<string, unknown>>({
   })
 
   return (
+    <>
     <Card>
       <CardHeader className="flex-row justify-between items-center gap-x-2 space-y-0 flex-wrap">
         <CardTitle>{title}</CardTitle>
@@ -283,15 +373,17 @@ export function DynamicTable<T extends Record<string, unknown>>({
           columns={columns}
           searchable={searchable}
           searchColumn={effectiveSearchColumn}
-          searchPlaceholder={searchPlaceholder}
+          searchPlaceholder={searchPlaceholder ?? labels?.searchPlaceholder}
           filters={filters}
-          createButton={createButton}
+          createButton={resolvedCreateButton}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          labels={labels}
+          onDeleteSelected={onDeleteSelected}
         />
       </CardHeader>
       <CardContent className="p-0">
-        {viewMode === "table" ? (
+        {(isLoading ? (loadingView ?? viewMode) : viewMode) === "table" ? (
           <ScrollArea
             orientation="horizontal"
             className="w-[calc(100vw-2.25rem)] md:w-auto"
@@ -305,32 +397,40 @@ export function DynamicTable<T extends Record<string, unknown>>({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     ))}
                   </TableRow>
                 ))}
               </TableHeader>
               <TableBody>
-                {table.getRowModel().rows?.length ? (
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, rowIndex) => (
+                    <TableRow key={`skeleton-row-${rowIndex}`}>
+                      {table.getVisibleLeafColumns().map((column) => (
+                        <TableCell key={`skeleton-cell-${rowIndex}-${column.id}`}>
+                          <Skeleton className="h-8 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => {
                     const colorClass = colorize
                       ? getRowColorClass(
-                          effectiveColorizeColumn
-                            ? row.original[effectiveColorizeColumn]
-                            : undefined,
-                          colors
-                        )
+                        effectiveColorizeColumn
+                          ? row.original[effectiveColorizeColumn]
+                          : undefined,
+                        colors
+                      )
                       : ""
                     return (
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
-                        className={cn(
-                          row.getIsSelected() ? colorClass : "hover:bg-transparent"
-                        )}
+                        className={cn(colorClass)}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
@@ -349,7 +449,7 @@ export function DynamicTable<T extends Record<string, unknown>>({
                       colSpan={tableColumns.length}
                       className="h-24 text-center"
                     >
-                      {noResultsMessage}
+                      {resolvedNoResults}
                     </TableCell>
                   </TableRow>
                 )}
@@ -366,13 +466,32 @@ export function DynamicTable<T extends Record<string, unknown>>({
             colorize={colorize}
             colorizeColumn={effectiveColorizeColumn}
             colors={colors}
-            noResultsMessage={noResultsMessage}
+            noResultsMessage={resolvedNoResults}
+            isLoading={isLoading}
           />
         )}
       </CardContent>
       <CardFooter className="block py-3">
-        <DataTablePagination table={table} />
+        <DataTablePagination
+          table={table}
+          pageSizeOptions={pageSizeOptions}
+          rowCount={rowCount}
+          rowsSelectedLabel={labels?.rowsSelected}
+        />
       </CardFooter>
     </Card>
+
+      {/* Built-in responsive dialog */}
+      {dialog && (
+        <DynamicTableDialog
+          open={dialog.open}
+          onOpenChange={dialog.onOpenChange}
+          title={dialog.title}
+          description={dialog.description}
+        >
+          {children}
+        </DynamicTableDialog>
+      )}
+    </>
   )
 }

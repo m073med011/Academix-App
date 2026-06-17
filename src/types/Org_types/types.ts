@@ -30,8 +30,10 @@ export interface Organization extends BaseEntity {
   creatorId?: string | User
   deletedAt?: string | null
   settings?: OrganizationSettings
-  levels?: string[]
-  terms?: string[]
+  levelsCount?: number
+  termsCount?: number
+  coursesCount?: number
+  studentsCount?: number
 }
 
 export interface OrganizationRole extends BaseEntity {
