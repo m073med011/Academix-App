@@ -18,16 +18,31 @@ import {
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
+  // Selectable page sizes (default: [10, 20, 30, 40, 50])
+  pageSizeOptions?: number[]
+  // Total row count for the denominator in server-side mode; defaults to the
+  // current filtered client row count.
+  rowCount?: number
+  // i18n override for the "N of M row(s) selected." label
+  rowsSelectedLabel?: (selected: number, total: number) => string
 }
+
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50]
 
 export function DataTablePagination<TData>({
   table,
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  rowCount,
+  rowsSelectedLabel,
 }: DataTablePaginationProps<TData>) {
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
+  const totalCount = rowCount ?? table.getFilteredRowModel().rows.length
   return (
     <div className="flex flex-col items-center justify-between gap-2 py-4 md:flex-row">
       <div className="flex-1 text-sm text-muted-foreground">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {rowsSelectedLabel
+          ? rowsSelectedLabel(selectedCount, totalCount)
+          : `${selectedCount} of ${totalCount} row(s) selected.`}
       </div>
       <div className="flex items-center gap-x-6">
         <div className="hidden items-center gap-x-2 md:flex">
@@ -47,7 +62,7 @@ export function DataTablePagination<TData>({
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top" align="center">
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {pageSizeOptions.map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>

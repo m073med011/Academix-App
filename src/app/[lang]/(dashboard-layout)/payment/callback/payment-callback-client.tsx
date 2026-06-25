@@ -91,7 +91,7 @@ export function PaymentCallbackClient({
 
               // Redirect to purchased courses after 3 seconds
               setTimeout(() => {
-                router.push(`/${locale}/pages/account/profile?tab=purchased`)
+                router.push(`/${locale}/account/profile?tab=purchased`)
               }, 3000)
               return
             }
@@ -114,7 +114,7 @@ export function PaymentCallbackClient({
 
                   setTimeout(() => {
                     router.push(
-                      `/${locale}/pages/account/profile?tab=purchased`
+                      `/${locale}/account/profile?tab=purchased`
                     )
                   }, 3000)
                   return
@@ -133,7 +133,7 @@ export function PaymentCallbackClient({
               await refreshPurchasedCourses()
 
               setTimeout(() => {
-                router.push(`/${locale}/pages/account/profile?tab=purchased`)
+                router.push(`/${locale}/account/profile?tab=purchased`)
               }, 3000)
               return
             }
@@ -152,7 +152,7 @@ export function PaymentCallbackClient({
             await refreshPurchasedCourses()
 
             setTimeout(() => {
-              router.push(`/${locale}/pages/account/profile?tab=purchased`)
+              router.push(`/${locale}/account/profile?tab=purchased`)
             }, 3000)
             return
           } catch (error) {
@@ -170,7 +170,7 @@ export function PaymentCallbackClient({
             await refreshPurchasedCourses()
 
             setTimeout(() => {
-              router.push(`/${locale}/pages/account/profile?tab=purchased`)
+              router.push(`/${locale}/account/profile?tab=purchased`)
             }, 3000)
             return
           }
@@ -190,7 +190,7 @@ export function PaymentCallbackClient({
 
           // Redirect to purchased courses after 3 seconds
           setTimeout(() => {
-            router.push(`/${locale}/pages/account/profile?tab=purchased`)
+            router.push(`/${locale}/account/profile?tab=purchased`)
           }, 3000)
         } else if (payment.status === "pending") {
           // Still processing - retry up to 5 times
@@ -214,7 +214,7 @@ export function PaymentCallbackClient({
 
               setTimeout(
                 () =>
-                  router.push(`/${locale}/pages/account/profile?tab=purchased`),
+                  router.push(`/${locale}/account/profile?tab=purchased`),
                 3000
               )
             } else {
@@ -303,7 +303,7 @@ export function PaymentCallbackClient({
             <div className="flex flex-col gap-2">
               <Button
                 onClick={() =>
-                  router.push(`/${locale}/pages/account/profile?tab=purchased`)
+                  router.push(`/${locale}/account/profile?tab=purchased`)
                 }
               >
                 {t.success.viewMyCourses}

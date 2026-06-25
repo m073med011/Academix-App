@@ -799,6 +799,8 @@
       "terms": "Terms",
       "joined": "Joined",
       "created": "Created",
+      "courses": "Courses",
+      "students": "Students",
       "owner": "Owner",
       "manage": "Manage",
       "viewDashboard": "View Dashboard",

@@ -1,4 +1,4 @@
-import { courseService } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_services/course-service"
+import { courseService } from "@/app/[lang]/(dashboard-layout)/account/courses/_services/course-service"
 import { toast } from "@/components/ui/sonner"
 import { create } from "zustand"
 

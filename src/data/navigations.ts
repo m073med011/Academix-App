@@ -440,18 +440,6 @@ const allNavigationsData: NavigationType[] = [
             title: "Basic",
             href: "/cards/basic",
           },
-          {
-            title: "Advanced",
-            href: "/cards/advanced",
-          },
-          {
-            title: "Analytics",
-            href: "/cards/analytics",
-          },
-          {
-            title: "Statistics",
-            href: "/cards/statistics",
-          },
         ],
       },
     ],

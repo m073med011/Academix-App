@@ -55,6 +55,7 @@ export default async function RootLayout(props: {
   return (
     <html lang={params.lang} dir={direction} suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={cn(
           "[&:lang(en)]:font-inter [&:lang(ar)]:font-tajawal", // Set font styles based on the language
           "bg-background text-foreground antialiased overscroll-none", // Set background, text, , anti-aliasing styles, and overscroll behavior

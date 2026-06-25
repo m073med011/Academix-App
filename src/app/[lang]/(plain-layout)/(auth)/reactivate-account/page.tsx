@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
-import { ReactivateAccount } from "@/components/auth/reactivate-account"
+import { ReactivateAccount } from "./reactivate-account"
 
 // Define metadata for the page
 export const metadata: Metadata = {

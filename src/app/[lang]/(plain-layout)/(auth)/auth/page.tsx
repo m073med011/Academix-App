@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
-import { AuthPage } from "@/components/auth/auth-page"
+import { AuthPage } from "./auth-page"
 
 export const metadata: Metadata = {
   title: "Auth",

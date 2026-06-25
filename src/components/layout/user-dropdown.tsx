@@ -75,7 +75,7 @@ export function UserDropdown({
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link
-              href={ensureLocalizedPathname("/pages/account/profile", locale)}
+              href={ensureLocalizedPathname("/account/profile", locale)}
             >
               <User className="me-2 size-4" />
               {dictionary.navigation.userNav.profile}
