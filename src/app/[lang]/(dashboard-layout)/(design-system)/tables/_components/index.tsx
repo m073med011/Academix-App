@@ -9,6 +9,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { ChevronDown, X } from "lucide-react"
 
 import type {
   ColumnDef,
@@ -22,6 +23,7 @@ import type { DynamicFilter, DynamicTableProps, ViewMode } from "./types"
 
 import { cn } from "@/lib/utils"
 
+import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -32,6 +34,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Table,
@@ -45,7 +54,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { renderCell } from "./cell-renderers"
 import { DynamicTableCardView } from "./table-card"
 import { DynamicTableDialog } from "./table-dialog"
-import { DynamicTableRowActions } from "./table-row-actions"
+import { RowContextMenu } from "./table-row-actions"
 import { DynamicTableToolbar } from "./table-toolbar"
 import { getRowColorClass } from "./utils"
 
@@ -198,19 +207,65 @@ export function DynamicTable<T extends Record<string, unknown>>({
     if (showCheckbox) {
       cols.push({
         id: "select",
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            className="ms-4"
-            aria-label="Select all"
-          />
-        ),
+        header: ({ table }) => {
+          const selectedCount =
+            table.getFilteredSelectedRowModel().rows.length
+          const totalCount = table.getFilteredRowModel().rows.length
+          const isAllSelected = table.getIsAllPageRowsSelected()
+          const isSomeSelected = table.getIsSomePageRowsSelected()
+
+          return (
+            <div className="flex items-center gap-1 ms-4">
+              <Checkbox
+                checked={
+                  isAllSelected || (isSomeSelected && "indeterminate")
+                }
+                onCheckedChange={(value) =>
+                  table.toggleAllPageRowsSelected(!!value)
+                }
+                aria-label="Select all"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="inline-flex items-center gap-0.5 rounded p-0.5 hover:bg-muted transition-colors"
+                    aria-label="Selection options"
+                  >
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    {selectedCount > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="h-5 min-w-5 px-1 text-[10px] font-semibold rounded-sm"
+                      >
+                        {selectedCount}
+                      </Badge>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[180px]">
+                  <DropdownMenuItem
+                    onClick={() =>
+                      table.toggleAllPageRowsSelected(true)
+                    }
+                    disabled={isAllSelected}
+                  >
+                    Select all on page ({totalCount})
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() =>
+                      table.toggleAllRowsSelected(false)
+                    }
+                    disabled={selectedCount === 0}
+                  >
+                    <X className="me-2 h-3.5 w-3.5" />
+                    Deselect all ({selectedCount})
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )
+        },
         cell: ({ row }) => (
           <Checkbox
             checked={row.getIsSelected()}
@@ -255,29 +310,15 @@ export function DynamicTable<T extends Record<string, unknown>>({
       })
     })
 
-    // Add actions column if actions provided
-    if (actions && actions.length > 0) {
-      cols.push({
-        id: "actions",
-        header: () => (
-          <span className="sr-only">{labels?.actions ?? "Actions"}</span>
-        ),
-        cell: ({ row }) => (
-          <DynamicTableRowActions row={row} actions={actions} />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      })
-    }
+    // Actions are now handled by right-click context menu (RowContextMenu)
+    // wrapping each table row — no dedicated actions column needed.
 
     return cols
   }, [
     columns,
-    actions,
     showCheckbox,
     filterMap,
     effectiveSearchColumn,
-    labels?.actions,
   ])
 
   // Stable row id derived from rowIdKey. Falls back to the row's index so a
@@ -380,6 +421,7 @@ export function DynamicTable<T extends Record<string, unknown>>({
           onViewModeChange={setViewMode}
           labels={labels}
           onDeleteSelected={onDeleteSelected}
+          showCheckbox={showCheckbox}
         />
       </CardHeader>
       <CardContent className="p-0">
@@ -426,11 +468,11 @@ export function DynamicTable<T extends Record<string, unknown>>({
                         colors
                       )
                       : ""
-                    return (
+                    const tableRow = (
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
-                        className={cn(colorClass)}
+                        className={cn(colorClass, "cursor-context-menu")}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id}>
@@ -442,6 +484,21 @@ export function DynamicTable<T extends Record<string, unknown>>({
                         ))}
                       </TableRow>
                     )
+
+                    // Wrap with right-click context menu for actions
+                    if (actions && actions.length > 0) {
+                      return (
+                        <RowContextMenu
+                          key={row.id}
+                          data={row.original}
+                          actions={actions}
+                        >
+                          {tableRow}
+                        </RowContextMenu>
+                      )
+                    }
+
+                    return tableRow
                   })
                 ) : (
                   <TableRow>

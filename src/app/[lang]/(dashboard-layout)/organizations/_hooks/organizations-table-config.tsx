@@ -6,7 +6,6 @@ import type {
 import Link from "next/link"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 
 export type OrganizationTableRow = {
   id: string
@@ -39,9 +38,19 @@ export function getOrganizationColumns(
   const t = dictionary
   return [
     {
+      key: "orgcover",
+      label: "Cover",
+      component: "image",
+      cardRole: "cover",
+      hidden: true,
+      enableHiding: false,
+      sortable: false,
+    },
+    {
       key: "name",
       label: "Organization",
       component: "custom",
+      cardRole: "title",
       render: (_, row) => (
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
@@ -66,9 +75,19 @@ export function getOrganizationColumns(
       sortable: true,
     },
     {
+      key: "ownerImage",
+      label: "Owner Avatar",
+      component: "avatar",
+      cardRole: "owner-image",
+      hidden: true,
+      enableHiding: false,
+      sortable: false,
+    },
+    {
       key: "ownerName",
       label: t.list.owner || "Owner",
       component: "custom",
+      cardRole: "owner-name",
       render: (_, row) =>
         row.ownerName ? (
           <div className="flex items-center gap-2">
@@ -87,6 +106,7 @@ export function getOrganizationColumns(
       key: "levelsCount",
       label: t.list.levels || "Levels",
       component: "number",
+      cardRole: "stat",
       render: (_, row) => row.levelsCount === null || row.levelsCount === undefined ? "-" : row.levelsCount,
       sortable: true,
     },
@@ -94,6 +114,7 @@ export function getOrganizationColumns(
       key: "termsCount",
       label: t.list.terms || "Terms",
       component: "number",
+      cardRole: "stat",
       render: (_, row) => row.termsCount === null || row.termsCount === undefined ? "-" : row.termsCount,
       sortable: true,
     },
@@ -101,6 +122,7 @@ export function getOrganizationColumns(
       key: "coursesCount",
       label: t.list.courses || "Courses",
       component: "number",
+      cardRole: "stat",
       render: (_, row) => row.coursesCount === null || row.coursesCount === undefined ? "-" : row.coursesCount,
       sortable: true,
     },
@@ -108,6 +130,7 @@ export function getOrganizationColumns(
       key: "studentsCount",
       label: t.list.students || "Students",
       component: "number",
+      cardRole: "stat",
       render: (_, row) => row.studentsCount === null || row.studentsCount === undefined ? "-" : row.studentsCount,
       sortable: true,
     },
@@ -123,19 +146,6 @@ export function getOrganizationColumns(
       component: "text",
       hidden: true,
       enableHiding: false,
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      component: "custom",
-      render: (_, row) => (
-        <Link href={`/organizations/${row.originalOrgId}/dashboard`}>
-          <Button variant="outline" size="sm">
-            Dashboard
-          </Button>
-        </Link>
-      ),
-      sortable: false,
     },
   ]
 }

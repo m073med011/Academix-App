@@ -1,30 +1,31 @@
 "use client"
 
-import { EllipsisVertical } from "lucide-react"
-
+import type { ReactNode } from "react"
 import type { Row } from "@tanstack/react-table"
 import type { ActionItem } from "./types"
+import { CheckSquare, Square } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 
-interface DynamicTableRowActionsProps<T> {
-  row: Row<T>
-  actions: ActionItem<T>[]
-}
+// ── Shared content renderer ─────────────────────────────────────────────────
 
-export function DynamicTableRowActions<T>({
-  row,
+/**
+ * Renders the action items inside a context-menu (or any menu).
+ * Extracted so both card and table views share the same markup.
+ */
+function ActionMenuItems<T>({
+  data,
   actions,
-}: DynamicTableRowActionsProps<T>) {
-  const data = row.original
-
+}: {
+  data: T
+  actions: ActionItem<T>[]
+}) {
   // Filter out hidden actions
   const visibleActions = actions.filter((action) => {
     if (action.hidden === undefined) return true
@@ -35,45 +36,100 @@ export function DynamicTableRowActions<T>({
   if (visibleActions.length === 0) return null
 
   return (
-    <div className="flex justify-end me-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 p-0"
-            aria-label="Open actions"
-          >
-            <EllipsisVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px]">
-          {visibleActions.map((action, index) => {
-            const isDisabled =
-              typeof action.disabled === "function"
-                ? action.disabled(data)
-                : action.disabled
+    <>
+      {visibleActions.map((action, index) => {
+        const isDisabled =
+          typeof action.disabled === "function"
+            ? action.disabled(data)
+            : action.disabled
 
-            return (
-              <div key={action.label}>
-                {action.separator && index > 0 && <DropdownMenuSeparator />}
-                <DropdownMenuItem
-                  onClick={() => action.onClick(data)}
-                  disabled={isDisabled}
-                  className={
-                    action.variant === "destructive"
-                      ? "text-destructive focus:text-destructive"
-                      : ""
-                  }
-                >
-                  {action.icon && <action.icon className="me-2 h-4 w-4" />}
-                  {action.label}
-                </DropdownMenuItem>
-              </div>
-            )
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+        return (
+          <div key={action.label}>
+            {action.separator && index > 0 && <ContextMenuSeparator />}
+            <ContextMenuItem
+              onClick={() => action.onClick(data)}
+              disabled={isDisabled}
+              variant={action.variant === "destructive" ? "destructive" : "default"}
+            >
+              {action.icon && <action.icon className="me-2 h-4 w-4" />}
+              {action.label}
+            </ContextMenuItem>
+          </div>
+        )
+      })}
+    </>
   )
+}
+
+// ── Context-menu wrapper ────────────────────────────────────────────────────
+
+/**
+ * Wraps `children` with a right-click context menu that shows row actions.
+ * Used by both the table view (wrapping <TableRow>) and the card view (wrapping <Card>).
+ */
+export function RowContextMenu<T>({
+  data,
+  actions,
+  children,
+  isSelected,
+  onToggleSelect,
+}: {
+  data: T
+  actions: ActionItem<T>[]
+  children: ReactNode
+  isSelected?: boolean
+  onToggleSelect?: () => void
+}) {
+  if (!actions || actions.length === 0) {
+    return <>{children}</>
+  }
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+      <ContextMenuContent className="w-[180px]">
+        {/* Selection toggle at the top */}
+        {onToggleSelect !== undefined && (
+          <>
+            <ContextMenuItem onClick={onToggleSelect}>
+              {isSelected ? (
+                <>
+                  <Square className="me-2 h-4 w-4" />
+                  Deselect
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="me-2 h-4 w-4" />
+                  Select
+                </>
+              )}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+          </>
+        )}
+        <ActionMenuItems data={data} actions={actions} />
+      </ContextMenuContent>
+    </ContextMenu>
+  )
+}
+
+// ── Legacy row-actions (kept for backward compat, now just a thin wrapper) ──
+
+interface DynamicTableRowActionsProps<T> {
+  row: Row<T>
+  actions: ActionItem<T>[]
+}
+
+/**
+ * @deprecated Use `RowContextMenu` instead. This component is kept for
+ * backward compatibility but no longer renders a visible trigger button —
+ * the context menu is triggered by right-click on the row/card.
+ */
+export function DynamicTableRowActions<T>({
+  row,
+  actions,
+}: DynamicTableRowActionsProps<T>) {
+  // No-op: actions are now handled by RowContextMenu wrapping the row/card.
+  // This stub is kept so existing imports don't break during migration.
+  return null
 }

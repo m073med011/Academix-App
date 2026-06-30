@@ -25,6 +25,17 @@ export type ColumnComponent =
   | "link"
   | "custom"
 
+// Visual role a column plays in the premium card view.
+// When set, the card layout places the column's value in the matching slot.
+// When omitted, the card auto-detects based on `component` and `key`.
+export type CardRole =
+  | "cover"        // Full-width cover image at the top
+  | "title"        // Primary name / heading
+  | "subtitle"     // Secondary text under the title
+  | "owner-image"  // Small avatar for the owner
+  | "owner-name"   // Owner display name
+  | "stat"         // Compact stat shown in the analytics row
+
 // Badge variant types
 export type BadgeVariant =
   | "default"
@@ -67,8 +78,9 @@ export interface DynamicColumn<T> {
   imageSize?: { width: number; height: number }
   // Placeholder for empty values
   placeholder?: string
+  // Visual role this column plays in the card view (auto-detected if omitted)
+  cardRole?: CardRole
 }
-
 // Action item configuration
 export interface ActionItem<T> {
   // Action label
@@ -267,4 +279,6 @@ export interface DynamicTableToolbarProps<T extends Record<string, unknown>> {
   onViewModeChange: (mode: ViewMode) => void
   labels?: DynamicTableLabels
   onDeleteSelected?: (selectedRows: T[]) => void
+  // Show selection controls (checkbox + dropdown) in the toolbar
+  showCheckbox?: boolean
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
-import { Plus, Users, BookOpen, Calendar, Layers, MapPin } from "lucide-react"
+import { Plus, Users, BookOpen, Calendar, Layers, MapPin, Menu, Info, Shield, ShieldAlert, Pencil, Trash } from "lucide-react"
 import { toast } from "sonner"
 
 import { DynamicTable } from "../../../../(design-system)/tables/_components"
@@ -14,15 +14,23 @@ import type { DynamicColumn } from "../../../../(design-system)/tables/_componen
 import { courseService } from "../../../../account/courses/_services/course-service"
 import { organizationService } from "../../../_services/organization.service"
 import type { Course, Organization } from "@/types/api"
+import { OrganizationSidebar } from "./organization-sidebar"
+import { CreateRoleModal } from "./create-role-modal"
+import { EditRoleModal } from "./edit-role-modal"
+import { LevelsTab } from "./levels-tab"
+import { TermsTab } from "./terms-tab"
+import { UsersTab } from "./users-tab"
+import { EditOrganizationModal } from "./edit-organization-modal"
+import { EditCourseModal } from "./edit-course-modal"
 
 const TABS = [
-  { id: "info", label: "Info" },
-  { id: "courses", label: "Courses" },
-  { id: "users", label: "Users" },
-  { id: "terms", label: "Terms" },
-  { id: "lvls", label: "Levels" },
-  { id: "roles", label: "Roles" },
-  { id: "permissions", label: "Permissions" },
+  { id: "info", label: "Info", icon: Info },
+  { id: "courses", label: "Courses", icon: BookOpen },
+  { id: "users", label: "Users", icon: Users },
+  { id: "terms", label: "Terms", icon: Calendar },
+  { id: "lvls", label: "Levels", icon: Layers },
+  { id: "roles", label: "Roles", icon: Shield },
+  { id: "permissions", label: "Permissions", icon: ShieldAlert },
 ]
 
 export function DashboardView({ slug }: { slug: string }) {
@@ -34,9 +42,53 @@ export function DashboardView({ slug }: { slug: string }) {
 
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [loadingOrg, setLoadingOrg] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const [courses, setCourses] = useState<Course[]>([])
   const [loadingCourses, setLoadingCourses] = useState(false)
+
+  const [roles, setRoles] = useState<any[]>([])
+  const [loadingRoles, setLoadingRoles] = useState(false)
+  const [isCreateRoleModalOpen, setIsCreateRoleModalOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<any>(null)
+  const [isEditRoleModalOpen, setIsEditRoleModalOpen] = useState(false)
+
+  const [isEditOrgModalOpen, setIsEditOrgModalOpen] = useState(false)
+
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false)
+
+  const refreshCourses = async () => {
+    setLoadingCourses(true)
+    try {
+      const res = await courseService.getCourses({ organizationId: slug })
+      const coursesData = Array.isArray(res) ? res : res.data || []
+      setCourses(coursesData as any)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoadingCourses(false)
+    }
+  }
+
+  const fetchRoles = async () => {
+    setLoadingRoles(true)
+    try {
+      const res: any = await organizationService.getRoles(slug)
+      const rolesData = Array.isArray(res) ? res : res.data || []
+      setRoles(rolesData)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoadingRoles(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === "roles") {
+      fetchRoles()
+    }
+  }, [activeTab, slug])
 
   useEffect(() => {
     setLoadingOrg(true)
@@ -110,57 +162,112 @@ export function DashboardView({ slug }: { slug: string }) {
     },
   ]
 
-  const tableColumns = activeTab === "courses" ? coursesColumns : defaultColumns
-  const tableData = activeTab === "courses" ? courses : []
-  const tableSearchColumn = activeTab === "courses" ? "title" : "name"
-  const isLoading = activeTab === "courses" ? loadingCourses : false
+  const rolesColumns: DynamicColumn<any>[] = [
+    { key: "name", label: "Name" },
+  ]
 
-  const createCourseButton =
-    activeTab === "courses"
-      ? {
-        label: "Add new course",
-        icon: Plus,
-        onClick: () => {
-          const lang = pathname.split("/")[1]
-          router.push(
-            `/${lang}/account/courses/create?organizationId=${slug}&courseType=organization`
-          )
-        },
-      }
-      : undefined
+  const tableColumns = activeTab === "courses" ? coursesColumns : activeTab === "roles" ? rolesColumns : defaultColumns
+  const tableData = activeTab === "courses" ? courses : activeTab === "roles" ? roles : []
+  const tableSearchColumn = activeTab === "courses" ? "title" : "name"
+  const isLoading = activeTab === "courses" ? loadingCourses : activeTab === "roles" ? loadingRoles : false
+
+  const createCourseButton = {
+    label: "Add new course",
+    icon: Plus,
+    onClick: () => {
+      const lang = pathname.split("/")[1]
+      router.push(
+        `/${lang}/account/courses/create?organizationId=${slug}&courseType=organization`
+      )
+    },
+  }
+
+  const createRoleButton = {
+    label: "Create Role",
+    icon: Plus,
+    onClick: () => setIsCreateRoleModalOpen(true),
+  }
+
+  const createButton = activeTab === "courses" ? createCourseButton : activeTab === "roles" ? createRoleButton : undefined
+
+  const handleDeleteRole = async (role: any) => {
+    if (!window.confirm(`Are you sure you want to delete role "${role.name}"?`)) return
+    try {
+      setLoadingRoles(true)
+      await organizationService.deleteRole(slug, role._id || role.id)
+      toast.success("Role deleted successfully.")
+      fetchRoles()
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to delete role.")
+      setLoadingRoles(false)
+    }
+  }
+
+  const roleActions = [
+    {
+      label: "Edit",
+      icon: Pencil,
+      onClick: (row: any) => {
+        setSelectedRole(row)
+        setIsEditRoleModalOpen(true)
+      },
+    },
+    {
+      label: "Delete",
+      icon: Trash,
+      variant: "destructive" as const,
+      onClick: handleDeleteRole,
+    },
+  ]
+
+  const courseActions = [
+    {
+      label: "Edit",
+      icon: Pencil,
+      onClick: (row: any) => {
+        setSelectedCourse(row)
+        setIsEditCourseModalOpen(true)
+      },
+    },
+  ]
+
+  const tableActions = activeTab === "roles" ? roleActions : activeTab === "courses" ? courseActions : undefined
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
-      {/* Inner Sidebar Controller */}
-      <aside className="w-full md:w-56 lg:w-64 shrink-0">
-        <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-1 overflow-x-auto pb-2 md:pb-0">
-          {TABS.map((tab) => (
-            <Button
-              key={tab.id}
-              variant={activeTab === tab.id ? "secondary" : "ghost"}
-              onClick={() => handleTabChange(tab.id)}
-              className={cn(
-                "justify-start whitespace-nowrap",
-                activeTab === tab.id
-                  ? "bg-primary/10 text-primary hover:bg-primary/20"
-                  : "text-muted-foreground"
-              )}
-            >
-              {tab.label}
-            </Button>
-          ))}
-        </nav>
-      </aside>
+    <div className="flex gap-4 lg:gap-6 h-full">
+      <OrganizationSidebar
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+      />
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col gap-4">
+        {/* <div className="flex items-center gap-2 md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="font-semibold">{TABS.find((t) => t.id === activeTab)?.label}</span>
+        </div> */}
+
         {activeTab === "info" ? (
           <Card>
-            <CardHeader>
-              <CardTitle>Organization Info</CardTitle>
-              <CardDescription>
-                Overview and settings for organization: <strong>{slug}</strong>
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+              <div className="space-y-1.5">
+                <CardTitle>Organization Info</CardTitle>
+                <CardDescription>
+                  Overview and settings for organization: <strong>{slug}</strong>
+                </CardDescription>
+              </div>
+              {organization && (
+                <Button variant="outline" size="sm" onClick={() => setIsEditOrgModalOpen(true)}>
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               {loadingOrg ? (
@@ -270,6 +377,12 @@ export function DashboardView({ slug }: { slug: string }) {
               )}
             </CardContent>
           </Card>
+        ) : activeTab === "lvls" ? (
+          <LevelsTab organizationId={slug} />
+        ) : activeTab === "terms" ? (
+          <TermsTab organizationId={slug} />
+        ) : activeTab === "users" ? (
+          <UsersTab organizationId={slug} />
         ) : (
           <DynamicTable
             data={tableData}
@@ -279,12 +392,48 @@ export function DashboardView({ slug }: { slug: string }) {
             searchColumn={tableSearchColumn}
             searchPlaceholder={`Search ${activeTab}...`}
             noResultsMessage={`No ${activeTab} found.`}
-            createButton={createCourseButton}
+            createButton={createButton}
+            actions={tableActions}
             isLoading={isLoading}
             showCheckbox={activeTab === "courses"}
             onDeleteSelected={activeTab === "courses" ? handleDeleteCourses : undefined}
           />
         )}
+
+        <CreateRoleModal
+          organizationId={slug}
+          isOpen={isCreateRoleModalOpen}
+          onClose={() => setIsCreateRoleModalOpen(false)}
+          onSuccess={fetchRoles}
+        />
+
+        <EditRoleModal
+          organizationId={slug}
+          role={selectedRole}
+          isOpen={isEditRoleModalOpen}
+          onClose={() => {
+            setIsEditRoleModalOpen(false)
+            setSelectedRole(null)
+          }}
+          onSuccess={fetchRoles}
+        />
+
+        <EditOrganizationModal
+          organization={organization}
+          isOpen={isEditOrgModalOpen}
+          onClose={() => setIsEditOrgModalOpen(false)}
+          onSuccess={(updated) => setOrganization(updated)}
+        />
+
+        <EditCourseModal
+          course={selectedCourse}
+          isOpen={isEditCourseModalOpen}
+          onClose={() => {
+            setIsEditCourseModalOpen(false)
+            setSelectedCourse(null)
+          }}
+          onSuccess={refreshCourses}
+        />
       </div>
     </div>
   )

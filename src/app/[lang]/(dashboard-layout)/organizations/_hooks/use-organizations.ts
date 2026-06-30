@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Plus } from "lucide-react"
+import { LayoutDashboard, Plus, Trash2 } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
-import type { DialogConfig } from "../../(design-system)/tables/_components/types"
+import type { ActionItem, DialogConfig } from "../../(design-system)/tables/_components/types"
 import {
   Organization,
   OrganizationMembership,
@@ -135,6 +135,29 @@ export function useOrganizations(
     description: t.createModal.description,
   }
 
+  // Context-menu actions (right-click on row / card)
+  const actions: ActionItem<OrganizationTableRow>[] = useMemo(
+    () => [
+      {
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        onClick: (row) => {
+          window.location.href = `/organizations/${row.originalOrgId}/dashboard`
+        },
+      },
+      {
+        label: "Delete",
+        icon: Trash2,
+        variant: "destructive" as const,
+        separator: true,
+        onClick: (row) => {
+          handleDeleteSelected([row])
+        },
+      },
+    ],
+    [handleDeleteSelected]
+  )
+
   return {
     loading,
     isRefetching,
@@ -146,6 +169,7 @@ export function useOrganizations(
     createButton,
     dialogConfig,
     handleDeleteSelected,
+    actions,
   }
 }
 
