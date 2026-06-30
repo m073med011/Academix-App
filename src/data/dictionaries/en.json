@@ -1145,17 +1145,296 @@
   "landingPage": {
     "header": {
       "features": "Features",
+      "mobileAccess": "Access on mobile and TV",
+      "certificate": "Certificate of completion",
+      "share": "Share",
+      "wishlisted": "Wishlisted",
+      "addToWishlist": "Add to Wishlist"
+    }
+  },
+  "stepsDemo": {
+    "titles": {
+      "basicHorizontal": "Basic Horizontal Steps",
+      "vertical": "Vertical Steps",
+      "withIcons": "Steps with Icons",
+      "clickable": "Clickable / Jumpable Steps",
+      "wizardForm": "Wizard Form Example",
+      "responsive": "Responsive Steps"
+    },
+    "labels": {
+      "step": "Step",
+      "account": "Account",
+      "profile": "Profile",
+      "confirm": "Confirm",
+      "accountSetup": "Account Setup",
+      "profileDetails": "Profile Details",
+      "preferences": "Preferences",
+      "confirmation": "Confirmation",
+      "personalInfo": "Personal Info",
+      "documents": "Documents",
+      "settings": "Settings",
+      "complete": "Complete",
+      "start": "Start",
+      "details": "Details",
+      "options": "Options",
+      "review": "Review",
+      "finish": "Finish",
+      "browse": "Browse",
+      "select": "Select",
+      "checkout": "Checkout",
+      "done": "Done"
+    },
+    "descriptions": {
+      "createAccount": "Create your account",
+      "addInfo": "Add your information",
+      "setPreferences": "Set your preferences",
+      "reviewConfirm": "Review and confirm",
+      "basicInfo": "Basic info",
+      "aboutYou": "About you"
+    },
+    "content": {
+      "welcome": "Welcome",
+      "welcomeDesc": "This is the first step of your process. Click Next to continue.",
+      "information": "Information",
+      "informationDesc": "Provide the necessary information in this step.",
+      "reviewTitle": "Review",
+      "reviewDesc": "Review all the information you've provided.",
+      "completeTitle": "Complete",
+      "completeDesc": "Congratulations! You've completed all steps.",
+      "accountSetupTitle": "Account Setup",
+      "accountSetupDesc": "Set up your account credentials and security settings.",
+      "profileDetailsTitle": "Profile Details",
+      "profileDetailsDesc": "Add your personal information and profile picture.",
+      "preferencesTitle": "Preferences",
+      "preferencesDesc": "Configure your notification and display preferences.",
+      "confirmationTitle": "Confirmation",
+      "confirmationDesc": "Review all settings and complete the setup process.",
+      "personalInfoTitle": "Personal Information",
+      "personalInfoDesc": "Enter your personal details including name and contact info.",
+      "documentsTitle": "Documents",
+      "documentsDesc": "Upload required documents for verification.",
+      "settingsTitle": "Settings",
+      "settingsDesc": "Configure your account settings and preferences.",
+      "allDoneTitle": "All Done!",
+      "allDoneDesc": "Your profile is complete and ready to use.",
+      "gettingStarted": "Getting Started",
+      "gettingStartedDesc": "Click on any completed step to jump back to it!",
+      "addDetails": "Add Details",
+      "addDetailsDesc": "You can navigate freely between completed steps.",
+      "selectOptions": "Select Options",
+      "selectOptionsDesc": "Configure your preferred options here.",
+      "reviewEverything": "Review Everything",
+      "reviewEverythingDesc": "Double-check all your selections before finishing.",
+      "allDoneProcess": "All Done!",
+      "allDoneProcessDesc": "You've successfully completed the process.",
+      "browseProducts": "Browse Products",
+      "browseProductsDesc": "Explore our collection and find what you need.",
+      "selectItems": "Select Items",
+      "selectItemsDesc": "Add your favorite items to the cart.",
+      "checkoutTitle": "Checkout",
+      "checkoutDesc": "Complete your purchase securely.",
+      "orderComplete": "Order Complete",
+      "orderCompleteDesc": "Your order has been placed successfully!"
+    },
+    "wizard": {
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "bio": "Bio",
+      "bioPlaceholder": "Tell us about yourself",
+      "reviewInfo": "Review Your Information",
+      "required": "Please fill in all required fields to continue.",
+      "submit": "Submit"
+    },
+    "responsive": {
+      "description": "Resize your browser to see the steps switch between horizontal and vertical layouts.",
+      "currently": "Currently",
+      "vertical": "Vertical (Mobile)",
+      "horizontal": "Horizontal (Desktop)"
+    },
+    "navigation": {
+      "previous": "Previous",
+      "next": "Next",
+      "finish": "Finish"
+    }
+  },
+  "cloudinary": {
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "uploadAnother": "Upload Another File",
+    "removeOld": "Removing old file...",
+    "fileType": "File Type",
+    "selectFileType": "Select file type",
+    "autoDetect": "Auto Detect",
+    "image": "Image",
+    "video": "Video",
+    "document": "Document/Other",
+    "dragDropImage": "Drag and drop an image here, or click to select",
+    "supports": "Supports: JPG, PNG, GIF, WebP, SVG",
+    "file": "File",
+    "chooseFile": "Choose File",
+    "noFileChosen": "No file chosen",
+    "tryAgain": "Try Again",
+    "uploadSuccessful": "Upload successful!",
+    "uploadedUrl": "Uploaded URL",
+    "copyUrl": "Copy URL",
+    "copied": "Copied!",
+    "error": {
+      "fileSize": "File size exceeds maximum allowed ({size})",
+      "uploadFailed": "Upload failed",
+      "deleteFailed": "Failed to delete old file from Cloudinary"
+    }
+  },
+  "fileDropzone": {
+    "instructions": "Drag and drop some files here, or click to select files",
+    "remove": "Remove"
+  },
+  "fileDropzonesPage": {
+    "basic": "Basic File Dropzone",
+    "multiple": "File Dropzone Multiple",
+    "maxFiles": {
+      "title": "File Dropzone Max Files",
+      "description": "Set to max {count} files"
+    },
+    "maxSize": {
+      "title": "File Dropzone Max Size",
+      "description": "Set to max {size}"
+    }
+  },
+  "sortableListDemo": {
+    "verticalList": "Vertical List",
+    "horizontalList": "Horizontal List",
+    "cardList": "Card List",
+    "items": {
+      "researchCompetitors": "Research competitors",
+      "draftProposal": "Draft project proposal",
+      "designSystem": "Design system architecture",
+      "setupEnv": "Setup development environment",
+      "implementFeatures": "Implement core features",
+      "research": "Research",
+      "draft": "Draft",
+      "design": "Design"
+    },
+    "status": {
+      "todo": "Todo",
+      "inProgress": "In Progress",
+      "done": "Done"
+    },
+    "labels": {
+      "task": "Task",
+      "status": "Status"
+    }
+  },
+  "ui": {
+    "breadcrumb": {
+      "home": "Home",
+      "navigateTo": "Navigate to",
+      "selectPage": "Select a page to navigate to.",
+      "close": "Close",
+      "more": "More",
+      "toggleMenu": "Toggle menu",
+      "breadcrumb": "Breadcrumb"
+    }
+  },
+  "landingPage": {
+    "header": {
+      "features": "Features",
       "testimonials": "Testimonials",
       "pricing": "Pricing",
       "signIn": "Sign In",
       "getStarted": "Get Started"
     },
     "hero": {
-      "badge": "New: Academix 2.0 is now available",
-      "title": "The unified learning infrastructure for modern education",
-      "description": "The perfect learning management system for schools, universities and corporate training needs. Simple, powerful and affordable.",
-      "startNow": "Get Started",
-      "learnMore": "Learn more"
+      "title": "Build skills that actually matter",
+      "description": "A modern learning platform for students, professionals, and teams — structured, outcome-driven education that helps you grow real-world skills and prove them.",
+      "getStarted": "Get started",
+      "browseCourses": "Browse courses"
+    },
+    "scrollHero": {
+      "title": "Learn skills. Build competence. Advance with clarity.",
+      "subtitle": "SCROLL TO SEE HOW LEARNING WORKS",
+      "activeTitle": "A Learning System Built for Outcomes",
+      "activeDescription": "Structured programs, real projects, and measurable progress. Designed for students, professionals, and organizations that value results.",
+      "cardFeature": "Learning Feature",
+      "cardCapability": "Structured Capability"
+    },
+    "radialTimeline": {
+      "defaultInfo": {
+        "title": "The Academix Ecosystem",
+        "description": "A next-generation ecosystem connecting ambitous learners, expert instructors, and forward-thinking organizations. Unlock potential with AI-driven pathways, secure credentials, and global opportunities.",
+        "stats": {
+          "activeRoles": "Active Roles",
+          "possibilities": "Possibilities",
+          "impact": "Impact",
+          "global": "Global"
+        }
+      },
+      "impact": "Impact",
+      "availableNow": "Available Now",
+      "comingSoon": "Coming Soon",
+      "roles": {
+        "1": {
+          "title": "Student",
+          "date": "Learning",
+          "content": "Embark on a personalized learning journey. Access world-class courses, track your growth with advanced analytics, and earn verified credentials that open doors.",
+          "category": "Learner",
+          "features": [
+            "Curated AI Learning Paths",
+            "Interactive Quizzes & Assignments",
+            "Real-time Progress Tracking",
+            "Blockchain-Verified Certificates"
+          ]
+        },
+        "2": {
+          "title": "Instructor",
+          "date": "Teaching",
+          "content": "Transform your expertise into income. Build engaging courses, mentor students globally, and leverage powerful tools to manage your education business.",
+          "category": "Educator",
+          "features": [
+            "Advanced Course Creation Studio",
+            "Detailed Student Analytics",
+            "Automated Revenue Payouts",
+            "Live Session Management"
+          ]
+        },
+        "3": {
+          "title": "Admin",
+          "date": "System",
+          "content": "Maintain total control over your platform. Orchestrate user roles, oversee financial flows, and ensure system integrity with enterprise-grade tools.",
+          "category": "Operations",
+          "features": [
+            "System-wide Analytics Dashboard",
+            "User & Content Management",
+            "Financial Oversight & Refunds",
+            "Security & Audit Logs"
+          ]
+        },
+        "4": {
+          "title": "Freelancer",
+          "date": "Working",
+          "content": "Monetize your skills on your own terms. Connect with clients, showcase your portfolio, and deliver projects via a seamless, secure workspace.",
+          "category": "Professional",
+          "features": [
+            "Global Talent Marketplace",
+            "Self-Branding Profile Tools",
+            "Direct Client Messaging",
+            "Secure Project Milestones"
+          ]
+        },
+        "5": {
+          "title": "Organizer",
+          "date": "Events",
+          "content": "Empower your organization. Manage teams, assign private training, and track skill development across your entire workforce.",
+          "category": "Community",
+          "features": [
+            "Multi-level Team Management",
+            "Private Course Library",
+            "Role-Based Access Control",
+            "Enterprise Performance Reports"
+          ]
+        }
+      }
     },
     "crossSystem": {
       "title": "Cross system enterprises",
@@ -1284,5 +1563,3 @@
     }
   }
 }
-
- 
