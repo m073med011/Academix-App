@@ -19,6 +19,7 @@ import { getRowColorClass } from "./utils"
 
 interface DynamicTableCardViewProps<T extends Record<string, unknown>> {
   table: Table<T>
+  
   columns: DynamicColumn<T>[]
   actions?: ActionItem<T>[]
   showCheckbox?: boolean
