@@ -162,7 +162,7 @@ export default function DynamicTableDemo() {
       searchPlaceholder="Search by name..."
       filters={userFilters}
       colorize
-      colorizeColumn="status"
+      // colorizeColumn="status"
       colors={statusColors}
       defaultView="table"
       title="Dynamic Table"

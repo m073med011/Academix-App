@@ -26,13 +26,14 @@ interface FlipCardProps {
     opacity: number
   }
   onClick: (src: string) => void
+  dictionary?: any
 }
 
 // --- FlipCard Component ---
 const IMG_WIDTH = 160
 const IMG_HEIGHT = 120
 
-function FlipCard({ src, index, target, onClick }: FlipCardProps) {
+function FlipCard({ src, index, target, onClick, dictionary }: FlipCardProps) {
   return (
     <motion.div
       animate={{
@@ -78,10 +79,10 @@ function FlipCard({ src, index, target, onClick }: FlipCardProps) {
         >
           <div className="text-center px-4">
             <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1.5">
-              Learning Feature
+              {dictionary?.cardFeature || "Learning Feature"}
             </p>
             <p className="text-base font-medium text-white">
-              Structured Capability
+              {dictionary?.cardCapability || "Structured Capability"}
             </p>
           </div>
         </div>
@@ -119,7 +120,11 @@ const IMAGES = [
 
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t
 
-export default function IntroAnimation() {
+interface IntroAnimationProps {
+  dictionary?: any
+}
+
+export default function IntroAnimation({ dictionary }: IntroAnimationProps) {
   const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter")
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const [activeImage, setActiveImage] = useState<string | null>(null)
@@ -242,7 +247,7 @@ export default function IntroAnimation() {
               }
               className="text-2xl md:text-4xl font-medium text-white"
             >
-              Learn skills. Build competence. Advance with clarity.
+              {dictionary?.title || "Learn skills. Build competence. Advance with clarity."}
             </motion.h1>
             <motion.p
               animate={
@@ -252,7 +257,7 @@ export default function IntroAnimation() {
               }
               className="mt-4 text-xs tracking-[0.2em] text-gray-400"
             >
-              SCROLL TO SEE HOW LEARNING WORKS
+              {dictionary?.subtitle || "SCROLL TO SEE HOW LEARNING WORKS"}
             </motion.p>
           </div>
 
@@ -262,11 +267,10 @@ export default function IntroAnimation() {
             className="absolute top-[10%] z-10 text-center px-4 pointer-events-none"
           >
             <h2 className="text-3xl md:text-5xl font-semibold text-white mb-4">
-              A Learning System Built for Outcomes
+              {dictionary?.activeTitle || "A Learning System Built for Outcomes"}
             </h2>
             <p className="max-w-lg mx-auto text-gray-300 text-sm md:text-base">
-              Structured programs, real projects, and measurable progress.
-              Designed for students, professionals, and organizations that value results.
+              {dictionary?.activeDescription || "Structured programs, real projects, and measurable progress. Designed for students, professionals, and organizations that value results."}
             </p>
           </motion.div>
 
@@ -337,6 +341,7 @@ export default function IntroAnimation() {
                   phase={introPhase}
                   target={target}
                   onClick={setActiveImage}
+                  dictionary={dictionary}
                 />
               )
             })}

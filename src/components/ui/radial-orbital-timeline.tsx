@@ -52,10 +52,12 @@ const iconMap: Record<string, LucideIcon> = {
 
 interface RadialOrbitalTimelineProps {
   timelineData: TimelineItem[]
+  dictionary?: any
 }
 
 export default function RadialOrbitalTimeline({
   timelineData,
+  dictionary,
 }: RadialOrbitalTimelineProps) {
   const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>(
     {}
@@ -75,13 +77,13 @@ export default function RadialOrbitalTimeline({
 
   // Default Platform Info
   const defaultInfo = {
-    title: "The Academix Ecosystem",
+    title: dictionary?.defaultInfo?.title || "The Academix Ecosystem",
     description:
-      "A next-generation ecosystem connecting ambitous learners, expert instructors, and forward-thinking organizations. Unlock potential with AI-driven pathways, secure credentials, and global opportunities.",
+      dictionary?.defaultInfo?.description || "A next-generation ecosystem connecting ambitous learners, expert instructors, and forward-thinking organizations. Unlock potential with AI-driven pathways, secure credentials, and global opportunities.",
     stats: [
-      { label: "Active Roles", value: "5" },
-      { label: "Possibilities", value: "∞" },
-      { label: "Impact", value: "Global" },
+      { label: dictionary?.defaultInfo?.stats?.activeRoles || "Active Roles", value: "5" },
+      { label: dictionary?.defaultInfo?.stats?.possibilities || "Possibilities", value: "∞" },
+      { label: dictionary?.defaultInfo?.stats?.impact || "Impact", value: dictionary?.defaultInfo?.stats?.global || "Global" },
     ],
   }
 
@@ -226,13 +228,13 @@ export default function RadialOrbitalTimeline({
                 <div className="flex items-center gap-4 text-sm text-gray-400">
                   <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-yellow-500" />
-                    <span>Impact: {activeItem.energy}%</span>
+                    <span>{dictionary?.impact || "Impact"}: {activeItem.energy}%</span>
                   </div>
                   <div className="w-px h-4 bg-white/20" />
                   <div>
                     {activeItem.status === "completed"
-                      ? "Available Now"
-                      : "Coming Soon"}
+                      ? dictionary?.availableNow || "Available Now"
+                      : dictionary?.comingSoon || "Coming Soon"}
                   </div>
                 </div>
               </motion.div>

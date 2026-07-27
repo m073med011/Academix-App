@@ -1,6 +1,5 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 
@@ -28,6 +27,7 @@ export default function OrganizationsView({
     createButton,
     dialogConfig,
     handleDeleteSelected,
+    actions,
   } = useOrganizations(t)
 
   return (
@@ -36,6 +36,7 @@ export default function OrganizationsView({
         isLoading={loading}
         data={tableData}
         columns={columns}
+        actions={actions}
         filters={filters}
         createButton={createButton}
         showCheckbox

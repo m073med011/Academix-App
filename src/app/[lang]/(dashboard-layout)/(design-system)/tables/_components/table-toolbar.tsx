@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import {
   Check,
+  ChevronDown,
   Eye,
   Hash,
   LayoutGrid,
@@ -54,6 +55,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import {
   Popover,
@@ -345,6 +347,7 @@ export function DynamicTableToolbar<T extends Record<string, unknown>>({
   onViewModeChange,
   labels,
   onDeleteSelected,
+  showCheckbox,
 }: DynamicTableToolbarProps<T>) {
   const searchColumnDef = columns.find((col) => col.key === searchColumn)
   const placeholder =
@@ -396,6 +399,66 @@ export function DynamicTableToolbar<T extends Record<string, unknown>>({
           <LayoutGrid className="h-4 w-4" />
         </ToggleGroupItem>
       </ToggleGroup>
+
+      {/* ── Selection Dropdown (visible in both table & card views) ── */}
+      {showCheckbox && (() => {
+        const selectedCount = table.getFilteredSelectedRowModel().rows.length
+        const totalCount   = table.getFilteredRowModel().rows.length
+        const isAllSelected  = table.getIsAllPageRowsSelected()
+        const isSomeSelected = table.getIsSomePageRowsSelected()
+
+        return (
+          <div className="flex items-center gap-1">
+            <Checkbox
+              checked={isAllSelected || (isSomeSelected && "indeterminate")}
+              onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
+              aria-label="Select all"
+              className="h-4 w-4"
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="inline-flex items-center gap-0.5 rounded p-0.5 hover:bg-muted transition-colors"
+                  aria-label="Selection options"
+                >
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  {selectedCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="h-5 min-w-5 px-1 text-[10px] font-semibold rounded-sm"
+                    >
+                      {selectedCount}
+                    </Badge>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[200px]">
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                  {selectedCount > 0 ? `${selectedCount} of ${totalCount} selected` : "Selection"}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                  checked={isAllSelected}
+                  onCheckedChange={() => table.toggleAllPageRowsSelected(true)}
+                  disabled={isAllSelected}
+                >
+                  Select all on page ({totalCount})
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                  checked={false}
+                  onCheckedChange={() => table.toggleAllRowsSelected(false)}
+                  disabled={selectedCount === 0}
+                  className="text-muted-foreground"
+                >
+                  <X className="me-2 h-3.5 w-3.5" />
+                  Deselect all
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )
+      })()}
 
       {/* Column Visibility */}
       <DropdownMenu>
