@@ -11,12 +11,12 @@ import {
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import type { ElementType } from "react"
+import type { ComponentType } from "react"
 
 export interface TabType {
   id: string
   label: string
-  icon?: ElementType
+  icon?: ComponentType<{ className?: string }>
 }
 
 interface OrganizationSidebarProps {
