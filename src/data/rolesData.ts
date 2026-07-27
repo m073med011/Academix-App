@@ -23,7 +23,7 @@ export const rolesData = [
     content: "Transform your expertise into income. Build engaging courses, mentor students globally, and leverage powerful tools to manage your education business.",
     category: "Educator",
     icon: "users",
-    relatedIds: [1, 5], // Student, Organizer
+    relatedIds: [1, 5], 
     status: "completed" as const,
     energy: 90,
     features: [
