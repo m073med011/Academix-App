@@ -2,7 +2,7 @@
 
 import type { DictionaryType } from "@/lib/get-dictionary"
 
-import { toast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CloudinaryUploader } from "@/components/ui/cloudinary-uploader"
 
@@ -21,15 +21,12 @@ export function CloudinaryUploadDemo({
           showUploadedUrl={true}
           dictionary={dictionary}
           onUploadComplete={(result) => {
-            toast({
-              title: "Upload Successful",
+            toast.success("Upload Successful", {
               description: `File uploaded to: ${result.secureUrl}`,
             })
           }}
           onError={(error) => {
-            toast({
-              variant: "destructive",
-              title: "Upload Failed",
+            toast.error("Upload Failed", {
               description: error,
             })
           }}

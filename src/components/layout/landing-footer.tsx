@@ -26,17 +26,20 @@ export function LandingFooter({ dictionary }: LandingFooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t bg-muted/40 py-8">
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
+    <footer className="relative z-20 border-t bg-muted/40 px-4 py-8 sm:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <p className="text-center text-sm text-muted-foreground sm:text-start">
           &copy; {currentYear} Academix. {t.rights}
         </p>
-        <div className="flex items-center gap-4">
+        <nav
+          aria-label={`${t.terms}, ${t.privacy}`}
+          className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:justify-end"
+        >
           <Link
             href={ensureLocalizedPathname("/terms", locale)}
             className={cn(
               buttonVariants({ variant: "link" }),
-              "text-muted-foreground"
+              "h-auto px-2 py-2 text-muted-foreground"
             )}
           >
             {t.terms}
@@ -45,12 +48,12 @@ export function LandingFooter({ dictionary }: LandingFooterProps) {
             href={ensureLocalizedPathname("/privacy", locale)}
             className={cn(
               buttonVariants({ variant: "link" }),
-              "text-muted-foreground"
+              "h-auto px-2 py-2 text-muted-foreground"
             )}
           >
             {t.privacy}
           </Link>
-        </div>
+        </nav>
       </div>
     </footer>
   )

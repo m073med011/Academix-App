@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useCartStore } from "@/stores/cart-store"
 import { usePurchasedCoursesStore } from "@/stores/purchased-courses-store"
 import { useSession } from "next-auth/react"
@@ -25,6 +25,7 @@ import type { LocaleType } from "@/types"
 import type { Course } from "@/types/api"
 
 import { ensureLocalizedPathname } from "@/lib/i18n"
+import { useAuthCheck } from "@/hooks/use-auth-check"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -45,7 +46,9 @@ export function CoursePurchaseCard({
   isLoadingStores,
 }: CoursePurchaseCardProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const t = dictionary.courseDetailsPage?.purchaseCard
+  const { requireAuth } = useAuthCheck()
 
   // Cart and purchased courses state
   const addToCart = useCartStore((state) => state.addToCart)
@@ -69,6 +72,8 @@ export function CoursePurchaseCard({
     }) ?? false
 
   const handleAddToCart = async () => {
+    if (!requireAuth()) return
+
     try {
       await addToCart(course._id)
     } catch (_error) {
@@ -77,6 +82,8 @@ export function CoursePurchaseCard({
   }
 
   const handleEnrollNow = async () => {
+    if (!requireAuth()) return
+
     try {
       await addToCart(course._id)
       router.push(ensureLocalizedPathname("/checkout", locale))
@@ -113,13 +120,13 @@ export function CoursePurchaseCard({
       {
         description: isWishlisted
           ? dictionary.toast.course.wishlistDescRemoved.replace(
-              "{title}",
-              course.title
-            )
+            "{title}",
+            course.title
+          )
           : dictionary.toast.course.wishlistDescAdded.replace(
-              "{title}",
-              course.title
-            ),
+            "{title}",
+            course.title
+          ),
       }
     )
   }
@@ -191,9 +198,9 @@ export function CoursePurchaseCard({
           {/* Action Buttons */}
           <div className="space-y-3">
             {(session?.user as any)?.id ===
-            (typeof course.instructor === "string"
-              ? course.instructor
-              : course.instructor?._id) ? (
+              (typeof course.instructor === "string"
+                ? course.instructor
+                : course.instructor?._id) ? (
               <div className="flex items-center justify-center gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                 <span className="text-sm font-medium text-green-700 dark:text-green-300">
@@ -214,7 +221,7 @@ export function CoursePurchaseCard({
                   onClick={() =>
                     router.push(
                       ensureLocalizedPathname(
-                        "/pages/account/profile?tab=purchased",
+                        "/account/profile?tab=purchased",
                         locale
                       )
                     )

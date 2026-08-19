@@ -1,4 +1,4 @@
-import { createServerCourseService } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_services/course-service"
+import { createServerCourseService } from "@/app/[lang]/(dashboard-layout)/account/courses/_services/course-service"
 
 import type { LocaleType } from "@/types"
 

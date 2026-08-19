@@ -29,7 +29,7 @@ export function Unauthorized401({ locale }: { locale: LocaleType }) {
       </p>
       <div className="flex gap-x-4">
         <Button size="lg" asChild>
-          <Link href={ensureLocalizedPathname("/sign-in", locale)}>
+          <Link href={ensureLocalizedPathname("/auth", locale)}>
             Sign In
           </Link>
         </Button>

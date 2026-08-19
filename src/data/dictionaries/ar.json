@@ -158,7 +158,6 @@
     "mockups": "نماذج محاكاة",
     "steps": "خطوات",
     "sortableList": "قائمة قابلة للترتيب",
-
     "dashboard": "لوحة التحكم",
     "products": "المنتجات",
     "list": "قائمة",
@@ -225,7 +224,9 @@
       "twoFactorMessage": "أرسلنا رمز تحقق إلى بريدك الإلكتروني.",
       "accountDisabled": "الحساب موقوف",
       "accountDisabledMessage": "نقلك الآن إلى صفحة إعادة التفعيل.",
-      "signInFailed": "تعذّر تسجيل الدخول"
+      "signInFailed": "تعذّر تسجيل الدخول",
+      "welcomeBack": "مرحبًا بعودتك",
+      "loggedInAs": "تم تسجيل الدخول كـ"
     },
     "register": {
       "title": "أنشئ حسابك",
@@ -793,6 +794,8 @@
       "publicOrganizations": "المؤسسات العامة",
       "levels": "المستويات",
       "terms": "الفصول الدراسية",
+      "courses": "الدورات",
+      "students": "الطلاب",
       "joined": "انضم",
       "created": "تاريخ الإنشاء",
       "owner": "المالك",
@@ -807,10 +810,9 @@
     },
     "createModal": {
       "title": "إنشاء مؤسسة",
-      "description": "إنشاء مؤسسة جديدة لإدارة الدورات والطلاب وأعضاء الفريق.",
+      "description": "الوصف",
       "name": "اسم المؤسسة",
       "namePlaceholder": "مثال: أكاديمية التكنولوجيا",
-      "description": "الوصف",
       "descriptionPlaceholder": "مؤسسة تعليمية حديثة تركز على تعليم التكنولوجيا",
       "orgCover": "صورة غلاف المؤسسة",
       "noImageChosen": "لم يتم اختيار صورة",
@@ -1140,139 +1142,224 @@
     }
   },
   "landingPage": {
+    "hero": {
+      "title": "ابنِ مهارات تُحدث فرقاً حقيقياً",
+      "description": "منصة تعليمية حديثة للطلاب والمحترفين وفرق العمل — تعليم منظّم وموجه نحو النتائج يساعدك على تنمية مهارات عملية وإثباتها.",
+      "getStarted": "ابدأ الآن",
+      "browseCourses": "تصفح الدورات"
+    },
+    "scrollHero": {
+      "title": "تعلم مهارات. ابنِ كفاءتك. تقدم بوضوح.",
+      "subtitle": "مرر لأسفل لترى كيف يعمل التعلم",
+      "activeTitle": "نظام تعليمي مبني للنتائج",
+      "activeDescription": "برامج منظمة، مشاريع حقيقية، وتقدم قابل للقياس. صُمم للطلاب والمحترفين والمنظمات التي تُقدر النتائج.",
+      "cardFeature": "ميزة تعليمية",
+      "cardCapability": "قدرة منظمة"
+    },
+    "radialTimeline": {
+      "defaultInfo": {
+        "title": "نظام أكاديمكس",
+        "description": "نظام متكامل من الجيل القادم يربط بين المتعلمين الطموحين، والمدربين الخبراء، والمنظمات ذات الرؤية المستقبلية. أطلق العنان لإمكانياتك من خلال مسارات مدعومة بالذكاء الاصطناعي، وشهادات موثقة، وفرص عالمية.",
+        "stats": {
+          "activeRoles": "أدوار نشطة",
+          "possibilities": "الاحتمالات",
+          "impact": "التأثير",
+          "global": "عالمي"
+        }
+      },
+      "impact": "التأثير",
+      "availableNow": "متاح الآن",
+      "comingSoon": "قريباً",
+      "roles": {
+        "1": {
+          "title": "طالب",
+          "date": "تعلم",
+          "content": "انطلق في رحلة تعليمية مخصصة. قم بالوصول إلى دورات عالمية المستوى، وتتبع نموك باستخدام تحليلات متقدمة، واحصل على شهادات موثقة تفتح الأبواب.",
+          "category": "متعلم",
+          "features": [
+            "مسارات تعليمية منظمة بالذكاء الاصطناعي",
+            "اختبارات ومهام تفاعلية",
+            "تتبع التقدم في الوقت الفعلي",
+            "شهادات موثقة بتقنية البلوكتشين"
+          ]
+        },
+        "2": {
+          "title": "مدرس",
+          "date": "تعليم",
+          "content": "حوّل خبرتك إلى دخل. قم ببناء دورات تفاعلية، وتوجيه الطلاب عالمياً، واستفد من أدوات قوية لإدارة أعمالك التعليمية.",
+          "category": "مُعلم",
+          "features": [
+            "استوديو متقدم لإنشاء الدورات",
+            "تحليلات تفصيلية للطلاب",
+            "دفعات أرباح تلقائية",
+            "إدارة الجلسات الحية"
+          ]
+        },
+        "3": {
+          "title": "مسؤول",
+          "date": "نظام",
+          "content": "حافظ على سيطرة كاملة على منصتك. قم بتنظيم أدوار المستخدمين، والإشراف على التدفقات المالية، وضمان سلامة النظام باستخدام أدوات على مستوى المؤسسة.",
+          "category": "عمليات",
+          "features": [
+            "لوحة تحكم تحليلات على مستوى النظام",
+            "إدارة المستخدمين والمحتوى",
+            "الإشراف المالي والمبالغ المستردة",
+            "سجلات الأمان والتدقيق"
+          ]
+        },
+        "4": {
+          "title": "مستقل",
+          "date": "عمل",
+          "content": "استثمر مهاراتك بشروطك الخاصة. تواصل مع العملاء، واعرض معرض أعمالك، وقم بتسليم المشاريع عبر مساحة عمل سلسة وآمنة.",
+          "category": "محترف",
+          "features": [
+            "سوق مواهب عالمي",
+            "أدوات ملف شخصي للعلامة التجارية الذاتية",
+            "رسائل مباشرة للعملاء",
+            "محطات آمنة للمشروع"
+          ]
+        },
+        "5": {
+          "title": "منظم",
+          "date": "فعاليات",
+          "content": "مكّن مؤسستك. قم بإدارة الفرق، وتعيين تدريب خاص، وتتبع تنمية المهارات عبر القوى العاملة بأكملها.",
+          "category": "مجتمع",
+          "features": [
+            "إدارة فرق متعددة المستويات",
+            "مكتبة دورات خاصة",
+            "التحكم في الوصول القائم على الأدوار",
+            "تقارير أداء المؤسسة"
+          ]
+        }
+      }
+    },
     "header": {
       "features": "المميزات",
       "testimonials": "الآراء",
+      "ecosystem": "\u0627\u0644\u0646\u0638\u0627\u0645",
       "pricing": "التسعير",
       "signIn": "تسجيل الدخول",
       "getStarted": "ابدأ الآن"
     },
-    "hero": {
-      "badge": "جديد: Academix 2.0 متاح الآن",
-      "title": "البنية التحتية التعليمية الموحدة للتعليم الحديث",
-      "description": "نظام إدارة التعلم المثالي للمدارس والجامعات واحتياجات التدريب في الشركات. بسيط وقوي وبأسعار معقولة.",
-      "startNow": "ابدأ الآن",
-      "learnMore": "اعرف المزيد"
-    },
     "crossSystem": {
-      "title": "مؤسسات متعددة الأنظمة",
-      "description": "تكامل بسلاسة مع أدواتك وسير عملك الحالي",
+      "title": "Cross system enterprises",
+      "description": "Seamlessly integrate with your existing tools and workflows",
       "cards": {
         "content": {
-          "title": "محتوى فعال",
-          "description": "أنشئ دورات رائعة باستخدام محررنا سهل الاستخدام."
+          "title": "Effective content",
+          "description": "Create beautiful courses with our easy to use editor."
         },
         "integration": {
-          "title": "تكامل أسرع",
-          "description": "تواصل مع أدواتك المفضلة في ثوانٍ.",
-          "learnMore": "اعرف المزيد"
+          "title": "Faster integration",
+          "description": "Connect to your favorite tools in seconds.",
+          "learnMore": "Learn more"
         },
         "analytics": {
-          "title": "تحليلات مرئية",
-          "description": "تتبع التقدم بتقارير مفصلة."
+          "title": "Visual analytics",
+          "description": "Track progress with detailed reporting."
         },
         "management": {
-          "title": "إدارة الفريق",
-          "description": "أدر الأدوار والأذونات بسهولة."
+          "title": "Team management",
+          "description": "Easily manage roles and permissions."
         },
         "media": {
-          "title": "غني بالوسائط",
-          "description": "دعم الفيديو والصوت والمحتوى التفاعلي."
+          "title": "Media rich",
+          "description": "Support for video, audio and interactive content."
         },
         "security": {
-          "title": "آمن ومتوافق",
-          "description": "أمان على مستوى المؤسسات لبياناتك."
+          "title": "Secure & compliant",
+          "description": "Enterprise grade security for your data."
         }
       }
     },
     "roi": {
-      "title": "كيف تثبت العائد على الاستثمار من التدريب",
+      "title": "How to prove ROI from training",
       "cards": {
         "intent": {
-          "title": "تحليل النية",
-          "description": "افهم ما يريد موظفوك تعلمه."
+          "title": "Analyze intent",
+          "description": "Understand what your employees want to learn."
         },
         "gaps": {
-          "title": "تحديد الثغرات",
-          "description": "حدد المهارات المفقودة في مؤسستك."
+          "title": "Spot the gaps",
+          "description": "Identify skills missing in your organization."
         },
         "metrics": {
-          "title": "تحديد مقاييس واضحة",
-          "description": "قس التأثير على أهداف العمل."
+          "title": "Set clear metrics",
+          "description": "Measure impact on business goals."
         }
       }
     },
     "analysis": {
-      "title": "التحليل، آمن ومعياري",
+      "title": "Analysis, safe and normate",
       "cards": {
         "realtime": {
-          "title": "تحليلات فورية",
-          "description": "شاهد البيانات فور حدوثها."
+          "title": "Analytics realtime",
+          "description": "See data as it happens."
         },
         "commitment": {
-          "title": "التزام كامل",
-          "description": "أمان البيانات مضمون."
+          "title": "Full commitment",
+          "description": "Data security guaranteed."
         },
         "diverse": {
-          "title": "مكونات متنوعة حية",
-          "description": "قابل للتكيف مع أي سير عمل."
+          "title": "Live diverse components",
+          "description": "Adaptable to any workflow."
         }
       }
     },
     "featureSplit1": {
-      "badge": "المميزات",
-      "title": "تصميم تعليمي مثبت علمياً",
-      "description": "مُصمم ليكون بديهياً وسهل الوصول لجميع المستخدمين بغض النظر عن قدراتهم التقنية. منصتنا تتكيف مع احتياجاتك.",
-      "users": "أكثر من 10 آلاف مستخدم"
+      "badge": "Features",
+      "title": "Scientifically proven learning design",
+      "description": "Designed to be intuitive and accessible for all users regardless of their technical ability. Our platform adapts to your needs.",
+      "users": "10k+ Users"
     },
     "interactive": {
-      "title": "بيئات تعلم تفاعلية"
+      "title": "Interactive learning environments"
     },
     "featureSplit2": {
-      "title": "التكنولوجيا والدعم البشري",
-      "description": "أدوات متقدمة للمطورين والمبدعين. وسع المنصة باستخدام واجهة برمجة التطبيقات ومجموعات أدوات التطوير القوية لدينا.",
-      "learnMore": "اعرف المزيد"
+      "title": "Technology and human support",
+      "description": "Advanced tools for developers and creators. Extend the platform with our robust API and SDKs.",
+      "learnMore": "Learn more"
     },
     "promotive": {
-      "title": "تعزيزي. ادرس وحدات لا تقدر بثمن",
-      "description": "ارتق بتعلمك إلى المستوى التالي من خلال دوراتنا المختارة."
+      "title": "Promotive. Study invaluable Modules",
+      "description": "Bring your learning to the next level with our curated courses."
     },
     "authorTools": {
-      "badge": "جديد",
-      "title": "قم بالتأليف بأدوات إبداعية لا حصر لها",
-      "description": "أطلق العنان لإبداعك باستخدام أدوات التصميم الجديدة المدمجة مباشرة في المنصة.",
-      "readMore": "اقرأ المزيد"
+      "badge": "New",
+      "title": "Author with endless creative tools",
+      "description": "Unleash your creativity with our new design tools built directly into the platform.",
+      "readMore": "Read more"
     },
     "cta": {
-      "title": "جاهز للبدء؟",
-      "description": "ابدأ تجربتك المجانية اليوم. لا حاجة لبطاقة ائتمان.",
-      "button": "ابدأ الآن"
+      "title": "Ready to begin?",
+      "description": "Start your free trial today. No credit card required.",
+      "button": "Get Started Now"
     },
     "features": {
-      "title": "نظام واحد، قابليلة توسع لا نهائية",
-      "description": "كل ما تحتاجه لإدارة برنامج تعليمي عالمي المستوى.",
+      "title": "One system, endless scale",
+      "description": "Everything you need to run a world-class education program.",
       "cards": {
         "analytics": {
-          "title": "تحليلات فورية",
-          "description": "تتبع التفاعل والأداء بدقة."
+          "title": "Real-time Analytics",
+          "description": "Track engagement and performance with precision."
         },
         "content": {
-          "title": "محتوى غني",
-          "description": "دعم الفيديو، الاختبارات، والمهام التفاعلية."
+          "title": "Rich Content",
+          "description": "Support for video, quizzes, and interactive assignments."
         },
         "gamification": {
-          "title": "التلعيب (Gamification)",
-          "description": "عزز الاحتفاظ بالمعلومات باستخدام الشارات، النقاط، ولوحات الصدارة."
+          "title": "Gamification",
+          "description": "Boost retention with badges, points, and leaderboards."
         },
         "mobile": {
-          "title": "الجوال أولاً",
-          "description": "تعلم في أي مكان وفي أي وقت على أي جهاز."
+          "title": "Mobile First",
+          "description": "Learn anywhere, anytime on any device."
         }
       }
     },
     "testimonials": {
-      "title": "مبني لفرق المتعلمين العالمية",
-      "description": "انضم إلى آلاف المؤسسات التي تحول تعليمها."
+      "title": "Built for global teams of learners",
+      "description": "Join thousands of organizations transforming their education."
     },
     "footer": {
       "rights": "جميع الحقوق محفوظة.",
@@ -1281,4 +1368,3 @@
     }
   }
 }
-

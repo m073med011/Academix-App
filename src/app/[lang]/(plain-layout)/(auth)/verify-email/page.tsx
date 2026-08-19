@@ -6,7 +6,7 @@ import type { Metadata } from "next"
 import { authOptions } from "@/configs/next-auth"
 import { getDictionary } from "@/lib/get-dictionary"
 
-import { VerifyEmail } from "@/components/auth/verify-email"
+import { VerifyEmail } from "./verify-email"
 
 // Define metadata for the page
 // More info: https://nextjs.org/docs/app/building-your-application/optimizing/metadata

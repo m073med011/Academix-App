@@ -7,8 +7,8 @@ import type {
   ActionItem,
   BadgeVariant,
   DynamicColumn,
-} from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/tables/dynamic-table/types"
-import { DynamicTable } from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/tables/dynamic-table"
+} from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components/types"
+import { DynamicTable } from "@/app/[lang]/(dashboard-layout)/(design-system)/tables/_components"
 
 // Course type for organization courses
 interface OrganizationCourse {
@@ -217,13 +217,13 @@ export function CoursesTab({ dictionary }: CoursesTabProps) {
     {
       key: "courseName",
       label: dictionary.columns.courseName,
-      type: "text",
+      component: "text",
       sortable: true,
     },
     {
       key: "status",
       label: dictionary.columns.status,
-      type: "badge",
+      component: "badge",
       sortable: true,
       getBadgeVariant: (value): BadgeVariant => {
         switch (value) {
@@ -241,13 +241,13 @@ export function CoursesTab({ dictionary }: CoursesTabProps) {
     {
       key: "enrollees",
       label: dictionary.columns.enrollees,
-      type: "number",
+      component: "number",
       sortable: true,
     },
     {
       key: "createdDate",
       label: dictionary.columns.createdDate,
-      type: "date",
+      component: "date",
       sortable: true,
     },
   ]

@@ -1,14 +1,16 @@
 "use client"
 
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   motion,
   useMotionValue,
+  useReducedMotion,
   useScroll,
   useSpring,
   useTransform,
-  AnimatePresence,
 } from "framer-motion"
+
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip"
@@ -16,8 +18,6 @@ export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip"
 interface FlipCardProps {
   src: string
   index: number
-  total: number
-  phase: AnimationPhase
   target: {
     x: number
     y: number
@@ -25,16 +25,29 @@ interface FlipCardProps {
     scale: number
     opacity: number
   }
+  dimensions: { width: number; height: number }
+  reduceMotion: boolean
+  isInteractive: boolean
   onClick: (src: string) => void
+  dictionary?: any
 }
 
-// --- FlipCard Component ---
-const IMG_WIDTH = 160
-const IMG_HEIGHT = 120
-
-function FlipCard({ src, index, target, onClick }: FlipCardProps) {
+function FlipCard({
+  src,
+  index,
+  target,
+  dimensions,
+  reduceMotion,
+  isInteractive,
+  onClick,
+  dictionary,
+}: FlipCardProps) {
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      aria-label={`${dictionary?.cardFeature || "Learning feature"} ${index + 1}`}
+      aria-hidden={!isInteractive}
+      tabIndex={isInteractive ? 0 : -1}
       animate={{
         x: target.x,
         y: target.y,
@@ -42,56 +55,73 @@ function FlipCard({ src, index, target, onClick }: FlipCardProps) {
         scale: target.scale,
         opacity: target.opacity,
       }}
-      transition={{ type: "spring", stiffness: 40, damping: 15 }}
+      transition={
+        reduceMotion
+          ? { duration: 0 }
+          : { type: "spring", stiffness: 40, damping: 15 }
+      }
       style={{
         position: "absolute",
-        width: IMG_WIDTH,
-        height: IMG_HEIGHT,
+        width: dimensions.width,
+        height: dimensions.height,
         transformStyle: "preserve-3d",
         perspective: "1000px",
       }}
-      className="cursor-pointer group"
+      className="group cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none"
       onClick={(e) => {
-        e.stopPropagation() // Prevent triggering parent clicks if any
+        e.stopPropagation()
         onClick(src)
       }}
     >
       <motion.div
         className="relative h-full w-full"
         style={{ transformStyle: "preserve-3d" }}
-        transition={{ duration: 0.6, type: "spring", stiffness: 260, damping: 20 }}
-        whileHover={{ rotateY: 180 }}
+        transition={
+          reduceMotion
+            ? { duration: 0 }
+            : {
+                duration: 0.6,
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+              }
+        }
+        whileHover={reduceMotion ? undefined : { rotateY: 180 }}
+        whileFocus={reduceMotion ? undefined : { rotateY: 180 }}
       >
-        {/* Front */}
         <div
-          className="absolute inset-0 h-full w-full overflow-hidden rounded-xl shadow-lg bg-gray-200"
+          className="absolute inset-0 h-full w-full overflow-hidden rounded-xl bg-gray-200 shadow-lg"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <img src={src} alt={`learning-${index}`} className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+          <img
+            src={src}
+            alt=""
+            loading={index < 4 ? "eager" : "lazy"}
+            decoding="async"
+            draggable={false}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-transparent" />
         </div>
 
-        {/* Back */}
         <div
-          className="absolute inset-0 h-full w-full rounded-xl shadow-lg bg-gray-900 flex items-center justify-center border border-gray-700"
+          className="absolute inset-0 flex h-full w-full items-center justify-center rounded-xl border border-gray-700 bg-gray-900 shadow-lg"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <div className="text-center px-4">
-            <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1.5">
-              Learning Feature
+          <div className="px-3 text-center sm:px-4">
+            <p className="mb-1 text-[0.625rem] font-bold tracking-widest text-blue-400 uppercase sm:mb-1.5 sm:text-xs">
+              {dictionary?.cardFeature || "Learning Feature"}
             </p>
-            <p className="text-base font-medium text-white">
-              Structured Capability
+            <p className="text-xs font-medium text-white sm:text-sm lg:text-base">
+              {dictionary?.cardCapability || "Structured Capability"}
             </p>
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.button>
   )
 }
 
-// --- Constants ---
-const TOTAL_IMAGES = 20
 const MAX_SCROLL = 3000
 
 const IMAGES = [
@@ -116,13 +146,21 @@ const IMAGES = [
   "https://images.unsplash.com/photo-1600267165630-90d7b8b42c63?w=800&q=80",
   "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800&q=80",
 ]
-
 const lerp = (a: number, b: number, t: number) => a * (1 - t) + b * t
 
-export default function IntroAnimation() {
+interface IntroAnimationProps {
+  dictionary?: any
+  closeLabel?: string
+}
+
+export default function IntroAnimation({
+  dictionary,
+  closeLabel = "Close",
+}: IntroAnimationProps) {
   const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter")
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const [activeImage, setActiveImage] = useState<string | null>(null)
+  const reduceMotion = useReducedMotion() ?? false
 
   const trackRef = useRef<HTMLDivElement>(null)
   const stickyRef = useRef<HTMLDivElement>(null)
@@ -139,21 +177,6 @@ export default function IntroAnimation() {
     observer.observe(stickyRef.current)
     return () => observer.disconnect()
   }, [])
-
-  // Close modal on scroll
-  useEffect(() => {
-    if (!activeImage) return
-
-    const handleScroll = () => {
-      setActiveImage(null)
-    }
-
-    // Capture scrolling on the window
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [activeImage])
 
   // Scroll
   const { scrollYProgress } = useScroll({
@@ -174,7 +197,7 @@ export default function IntroAnimation() {
 
   useEffect(() => {
     const el = stickyRef.current
-    if (!el) return
+    if (!el || reduceMotion) return
     const onMove = (e: MouseEvent) => {
       const rect = el.getBoundingClientRect()
       const x = (e.clientX - rect.left) / rect.width
@@ -182,28 +205,37 @@ export default function IntroAnimation() {
     }
     el.addEventListener("mousemove", onMove)
     return () => el.removeEventListener("mousemove", onMove)
-  }, [mouseX])
+  }, [mouseX, reduceMotion])
 
   // Intro timing
   useEffect(() => {
+    if (reduceMotion) {
+      setIntroPhase("circle")
+      return
+    }
+
     const t1 = setTimeout(() => setIntroPhase("line"), 500)
     const t2 = setTimeout(() => setIntroPhase("circle"), 2500)
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [])
+  }, [reduceMotion])
 
-  // Scatter positions
   const scatterPositions = useMemo(
     () =>
-      IMAGES.map(() => ({
-        x: (Math.random() - 0.5) * 2200,
-        y: (Math.random() - 0.5) * 1400,
-        rotation: (Math.random() - 0.5) * 180,
-        scale: 0.6,
-        opacity: 0,
-      })),
+      IMAGES.map((_, index) => {
+        const angle = ((index * 137.5 + 17) * Math.PI) / 180
+        const radius = 780 + (index % 5) * 130
+
+        return {
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius * 0.65,
+          rotation: ((index * 47) % 180) - 90,
+          scale: 0.6,
+          opacity: 0,
+        }
+      }),
     []
   )
 
@@ -212,7 +244,31 @@ export default function IntroAnimation() {
   const [rotateValue, setRotateValue] = useState(0)
   const [parallaxValue, setParallaxValue] = useState(0)
 
+  const cardDimensions = useMemo(() => {
+    if (
+      (containerSize.width > 0 && containerSize.width < 480) ||
+      (containerSize.height > 0 && containerSize.height < 460)
+    ) {
+      return { width: 96, height: 72 }
+    }
+    if (
+      (containerSize.width > 0 && containerSize.width < 768) ||
+      (containerSize.height > 0 && containerSize.height < 640)
+    ) {
+      return { width: 120, height: 90 }
+    }
+    return { width: 160, height: 120 }
+  }, [containerSize.height, containerSize.width])
+
+  const compactLayout =
+    containerSize.width === 0 ||
+    containerSize.width < 640 ||
+    containerSize.height < 560
+  const visibleImages = compactLayout ? IMAGES.slice(0, 8) : IMAGES
+
   useEffect(() => {
+    if (reduceMotion) return
+
     const u1 = smoothMorph.on("change", setMorphValue)
     const u2 = smoothRotate.on("change", setRotateValue)
     const u3 = smoothMouseX.on("change", setParallaxValue)
@@ -221,65 +277,105 @@ export default function IntroAnimation() {
       u2()
       u3()
     }
-  }, [smoothMorph, smoothRotate, smoothMouseX])
+  }, [reduceMotion, smoothMorph, smoothMouseX, smoothRotate])
 
   const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1])
   const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0])
 
-  return (
-    <div ref={trackRef} className="relative w-full h-[300vh]">
-      <div ref={stickyRef} className="sticky top-0 h-screen w-full overflow-hidden">
-        <div className="relative h-full w-full flex items-center justify-center">
+  if (reduceMotion) {
+    return (
+      <div ref={trackRef} className="w-full px-4 py-20 sm:px-6 sm:py-24">
+        <div className="mx-auto w-full max-w-5xl text-center">
+          <p className="text-xs tracking-[0.16em] text-gray-400 uppercase">
+            {dictionary?.subtitle || "How learning works"}
+          </p>
+          <h2 className="mx-auto mt-4 max-w-3xl text-3xl leading-tight font-semibold text-balance text-white sm:text-5xl">
+            {dictionary?.activeTitle || "A Learning System Built for Outcomes"}
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-gray-300 sm:text-base">
+            {dictionary?.activeDescription ||
+              "Structured programs, real projects, and measurable progress."}
+          </p>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+            {IMAGES.slice(0, 6).map((src) => (
+              <div
+                key={src}
+                className="aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-gray-900"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-          {/* Intro Text */}
-          <div className="absolute z-0 text-center pointer-events-none">
-            <motion.h1
+  return (
+    <div
+      ref={trackRef}
+      className="relative h-[260svh] w-full sm:h-[280svh] lg:h-[300svh]"
+    >
+      <div
+        ref={stickyRef}
+        className="sticky top-0 h-[100svh] w-full overflow-hidden"
+      >
+        <div className="relative flex h-full w-full items-center justify-center">
+          <div className="pointer-events-none absolute z-20 max-w-3xl px-5 text-center">
+            <motion.h2
               initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
               animate={
                 introPhase === "circle" && morphValue < 0.5
                   ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" }
                   : { opacity: 0 }
               }
-              className="text-2xl md:text-4xl font-medium text-white"
+              className="text-2xl leading-tight font-medium text-balance text-white [text-shadow:0_2px_18px_rgb(0_0_0/0.95)] sm:text-3xl md:text-4xl"
             >
-              Learn skills. Build competence. Advance with clarity.
-            </motion.h1>
+              {dictionary?.title ||
+                "Learn skills. Build competence. Advance with clarity."}
+            </motion.h2>
             <motion.p
               animate={
                 introPhase === "circle" && morphValue < 0.5
                   ? { opacity: 0.5 - morphValue }
                   : { opacity: 0 }
               }
-              className="mt-4 text-xs tracking-[0.2em] text-gray-400"
+              className="mt-4 text-[0.625rem] tracking-[0.14em] text-gray-300 [text-shadow:0_2px_12px_rgb(0_0_0/1)] sm:text-xs sm:tracking-[0.2em]"
             >
-              SCROLL TO SEE HOW LEARNING WORKS
+              {dictionary?.subtitle || "SCROLL TO SEE HOW LEARNING WORKS"}
             </motion.p>
           </div>
 
-          {/* Active Content */}
           <motion.div
             style={{ opacity: contentOpacity, y: contentY }}
-            className="absolute top-[10%] z-10 text-center px-4 pointer-events-none"
+            className="pointer-events-none absolute top-[max(6rem,12%)] z-30 w-full max-w-3xl px-5 text-center sm:top-[max(6.5rem,10%)] sm:px-6"
           >
-            <h2 className="text-3xl md:text-5xl font-semibold text-white mb-4">
-              A Learning System Built for Outcomes
+            <h2 className="mb-3 text-2xl leading-tight font-semibold text-balance text-white sm:mb-4 sm:text-3xl md:text-5xl">
+              {dictionary?.activeTitle ||
+                "A Learning System Built for Outcomes"}
             </h2>
-            <p className="max-w-lg mx-auto text-gray-300 text-sm md:text-base">
-              Structured programs, real projects, and measurable progress.
-              Designed for students, professionals, and organizations that value results.
+            <p className="mx-auto max-w-xl text-sm leading-relaxed text-gray-300 md:text-base">
+              {dictionary?.activeDescription ||
+                "Structured programs, real projects, and measurable progress. Designed for students, professionals, and organizations that value results."}
             </p>
           </motion.div>
 
-          {/* Cards */}
-          <div className="relative w-full h-full flex items-center justify-center">
-            {IMAGES.map((src, i) => {
+          <div className="relative z-10 flex h-full w-full items-center justify-center">
+            {visibleImages.map((src, i) => {
               let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 }
+              const totalImages = visibleImages.length
 
               if (introPhase === "scatter") {
                 target = scatterPositions[i]
               } else if (introPhase === "line") {
-                const spacing = 170
-                const totalWidth = TOTAL_IMAGES * spacing
+                const spacing = cardDimensions.width + 10
+                const totalWidth = (totalImages - 1) * spacing
                 target = {
                   x: i * spacing - totalWidth / 2,
                   y: 0,
@@ -288,10 +384,30 @@ export default function IntroAnimation() {
                   opacity: 1,
                 }
               } else {
-                const minDim = Math.min(containerSize.width, containerSize.height)
-                const circleRadius = Math.min(minDim * 0.42, 480)
+                const minDim = Math.min(
+                  containerSize.width,
+                  containerSize.height
+                )
+                const circleScale = compactLayout ? 0.62 : 1
+                const horizontalRadius = Math.max(
+                  88,
+                  (containerSize.width - cardDimensions.width * circleScale) /
+                    2 -
+                    10
+                )
+                const verticalRadius = Math.max(
+                  88,
+                  (containerSize.height - cardDimensions.height * circleScale) /
+                    2 -
+                    20
+                )
+                const circleRadius = Math.min(
+                  horizontalRadius,
+                  verticalRadius,
+                  480
+                )
 
-                const angle = (i / TOTAL_IMAGES) * 360
+                const angle = (i / totalImages) * 360
                 const rad = (angle * Math.PI) / 180
 
                 const circle = {
@@ -300,30 +416,39 @@ export default function IntroAnimation() {
                   rotation: angle + 90,
                 }
 
-                const spread = containerSize.width < 768 ? 150 : 200
+                const spread = compactLayout ? 132 : 200
                 const start = -90 - spread / 2
-                const step = spread / (TOTAL_IMAGES - 1)
+                const step = spread / (totalImages - 1)
 
-                const scrollProgress = Math.min(Math.max(rotateValue / 360, 0), 1)
+                const scrollProgress = Math.min(
+                  Math.max(rotateValue / 360, 0),
+                  1
+                )
                 const bounded = -scrollProgress * spread * 0.8
                 const arcAngle = start + i * step + bounded
                 const arcRad = (arcAngle * Math.PI) / 180
 
-                const arcRadius = minDim * 1.2
-                const arcCenterY = containerSize.height * 0.3 + arcRadius
+                const arcRadius = minDim * (compactLayout ? 1.05 : 1.2)
+                const arcCenterY = containerSize.height * 0.32 + arcRadius
 
                 const arc = {
-                  x: Math.cos(arcRad) * arcRadius + parallaxValue,
+                  x:
+                    Math.cos(arcRad) * arcRadius +
+                    (reduceMotion ? 0 : parallaxValue),
                   y: Math.sin(arcRad) * arcRadius + arcCenterY,
                   rotation: arcAngle + 90,
-                  scale: 1.5,
+                  scale: compactLayout
+                    ? 1.12
+                    : containerSize.width < 1024
+                      ? 1.3
+                      : 1.5,
                 }
 
                 target = {
                   x: lerp(circle.x, arc.x, morphValue),
                   y: lerp(circle.y, arc.y, morphValue),
                   rotation: lerp(circle.rotation, arc.rotation, morphValue),
-                  scale: lerp(1, arc.scale, morphValue),
+                  scale: lerp(circleScale, arc.scale, morphValue),
                   opacity: 1,
                 }
               }
@@ -333,50 +458,46 @@ export default function IntroAnimation() {
                   key={i}
                   src={src}
                   index={i}
-                  total={TOTAL_IMAGES}
-                  phase={introPhase}
                   target={target}
+                  dimensions={cardDimensions}
+                  reduceMotion={reduceMotion}
+                  isInteractive={
+                    target.opacity > 0.1 &&
+                    Math.abs(target.x) <
+                      containerSize.width / 2 + cardDimensions.width / 2 &&
+                    Math.abs(target.y) <
+                      containerSize.height / 2 + cardDimensions.height / 2
+                  }
                   onClick={setActiveImage}
+                  dictionary={dictionary}
                 />
               )
             })}
           </div>
 
-          {/* Modal Overlay */}
-          <AnimatePresence>
-            {activeImage && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-                onClick={() => setActiveImage(null)}
-              >
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="relative max-w-4xl max-h-[90vh] w-full overflow-hidden rounded-2xl shadow-2xl bg-gray-900"
-                  onClick={(e) => e.stopPropagation()} // Prevent close when clicking image
-                >
-                    <img 
-                        src={activeImage} 
-                        alt="Expanded view" 
-                        className="w-full h-full object-contain max-h-[85vh]" 
-                    />
-                    <button 
-                        onClick={() => setActiveImage(null)}
-                        className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-md transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
+          <Dialog
+            open={Boolean(activeImage)}
+            onOpenChange={(open) => {
+              if (!open) setActiveImage(null)
+            }}
+          >
+            <DialogContent
+              aria-describedby={undefined}
+              closeLabel={closeLabel}
+              className="max-h-[90svh] max-w-[calc(100%-1.5rem)] overflow-hidden border-white/10 bg-gray-950 p-0 text-white sm:max-w-4xl"
+            >
+              <DialogTitle className="sr-only">
+                {dictionary?.cardFeature || "Learning image preview"}
+              </DialogTitle>
+              {activeImage && (
+                <img
+                  src={activeImage}
+                  alt=""
+                  className="max-h-[85svh] w-full object-contain"
+                />
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </div>

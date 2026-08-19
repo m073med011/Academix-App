@@ -14,12 +14,12 @@ export default async function OrganizationsPage({
   params,
 }: OrganizationsPageProps) {
   const { lang } = await params
-  const dict = await getDictionary(lang)
+  const dictionary = await getDictionary(lang)
 
   return (
     <OrganizationsView
-      dictionary={dict.organizationsPage}
-      fullDictionary={dict}
+      dictionary={dictionary.organizationsPage}
+      fullDictionary={dictionary}
     />
   )
 }

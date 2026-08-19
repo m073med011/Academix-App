@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
-import { Verify2FA } from "@/components/auth/verify-2fa"
+import { Verify2FA } from "./verify-2fa"
 
 // Define metadata for the page
 export const metadata: Metadata = {

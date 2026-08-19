@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const { email, code } = parsedData.data
 
     // Forward request to LMS Backend
-    const response = await fetch(`${LMS_BACKEND_URL}/auth/verify-email`, {
+    const response = await fetch(`${LMS_BACKEND_URL}/auth/email-verification`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

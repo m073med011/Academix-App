@@ -13,13 +13,13 @@ import { ensureLocalizedPathname } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { LanguageDropdown } from "@/components/language-dropdown"
-import { ModeDropdown } from "@/components/mode-dropdown"
 import { Customizer } from "@/components/layout/customizer"
 
 interface LandingHeaderProps {
@@ -36,128 +36,158 @@ export function LandingHeader({ dictionary }: LandingHeaderProps) {
 
   const navItems = [
     { label: t.features, href: "#features" },
-    { label: t.testimonials, href: "#testimonials" },
-    { label: t.pricing, href: "#pricing" },
+    { label: t.ecosystem, href: "#ecosystem" },
+    {
+      label: t.pricing,
+      href: ensureLocalizedPathname("/public/PricingPlan", locale),
+    },
   ]
 
   return (
     <>
       <Customizer />
-      <header className="fixed top-4 z-50 w-full max-w-5xl left-0 right-0 mx-auto border rounded-full bg-background/60 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-lg">
-      <div className="flex h-14 items-center px-6">
-        {/* Left: Logo */}
-        <div className="flex flex-1 items-center justify-start">
-          <Link
-            href={ensureLocalizedPathname("/", locale)}
-            className="flex items-center font-black"
-          >
-            <Image
-              src="/images/logos/logo02.png"
-              alt="Academix"
-              height={26}
-              width={26}
-              className="dark:invert mr-2"
-            />
-            <span className="font-bold inline-block">Academix</span>
-          </Link>
-        </div>
-
-        {/* Center: Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          {navItems.map((item) => (
+      <header className="fixed inset-x-3 top-3 z-50 mx-auto w-auto max-w-6xl rounded-full border bg-background/75 shadow-lg backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sm:inset-x-4 sm:top-4">
+        <div className="flex h-14 min-w-0 items-center px-3 sm:px-5">
+          <div className="flex min-w-0 flex-1 items-center justify-start">
             <Link
-              key={item.href}
-              href={item.href}
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              href={ensureLocalizedPathname("/", locale)}
+              className="flex min-w-0 items-center rounded-sm font-black focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
-              {item.label}
+              <Image
+                src="/images/logos/logo02.png"
+                alt=""
+                height={26}
+                width={26}
+                className="me-2 shrink-0 dark:invert"
+              />
+              <span className="truncate text-sm font-bold sm:text-base">
+                Academix
+              </span>
             </Link>
-          ))}
-        </nav>
-
-        {/* Right: Actions */}
-        <div className="flex flex-1 items-center justify-end gap-2">
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-2">
-            <LanguageDropdown dictionary={dictionary} />
-            <ModeDropdown dictionary={dictionary} />
-            <Button variant="ghost" size="sm" asChild className="rounded-full">
-              <Link href={ensureLocalizedPathname("/auth/signin", locale)}>
-                {t.signIn}
-              </Link>
-            </Button>
-            <Button size="sm" asChild className="rounded-full">
-              <Link href={ensureLocalizedPathname("/auth/register", locale)}>
-                {t.getStarted}
-              </Link>
-            </Button>
           </div>
 
-          {/* Mobile Actions: Only one primary button visible + Hamburger */}
-          <div className="flex md:hidden items-center gap-2">
-            <Button
-              size="sm"
-              asChild
-              className="hidden xs:inline-flex rounded-full"
-            >
-              <Link href={ensureLocalizedPathname("/auth/register", locale)}>
-                {t.getStarted}
+          <nav
+            aria-label="Academix"
+            className="hidden items-center gap-5 text-sm font-medium lg:flex xl:gap-6"
+          >
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-sm text-foreground/65 transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                {item.label}
               </Link>
-            </Button>
+            ))}
+          </nav>
 
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <SheetHeader>
-                  <SheetTitle className="text-left flex items-center gap-2">
-                    <Image
-                      src="/images/logos/logo02.png"
-                      alt="Academix"
-                      height={24}
-                      width={24}
-                      className="dark:invert"
-                    />
-                    Academix
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-4 mt-8">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="text-lg font-medium transition-colors hover:text-foreground/80"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <hr className="my-2" />
-                  <Link
-                    href={ensureLocalizedPathname("/auth/signin", locale)}
-                    className="text-lg font-medium transition-colors hover:text-foreground/80"
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+            <div className="hidden items-center gap-1.5 lg:flex">
+              <LanguageDropdown dictionary={dictionary} />
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="rounded-full"
+              >
+                <Link href={ensureLocalizedPathname("/auth", locale)}>
+                  {t.signIn}
+                </Link>
+              </Button>
+              <Button size="sm" asChild className="rounded-full">
+                <Link
+                  href={ensureLocalizedPathname("/auth?mode=register", locale)}
+                >
+                  {t.getStarted}
+                </Link>
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 lg:hidden">
+              <Button
+                size="sm"
+                asChild
+                className="hidden rounded-full sm:inline-flex"
+              >
+                <Link
+                  href={ensureLocalizedPathname("/auth?mode=register", locale)}
+                >
+                  {t.getStarted}
+                </Link>
+              </Button>
+
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0 rounded-full"
                   >
-                    {t.signIn}
-                  </Link>
-                  <Link
-                    href={ensureLocalizedPathname("/auth/register", locale)}
-                    className="text-lg font-medium transition-colors hover:text-foreground/80"
+                    <Menu className="size-5" aria-hidden="true" />
+                    <span className="sr-only">
+                      {dictionary.ui.breadcrumb.toggleMenu}
+                    </span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="end"
+                  className="w-[min(88vw,22rem)] overflow-y-auto p-5"
+                >
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2 text-start">
+                      <Image
+                        src="/images/logos/logo02.png"
+                        alt=""
+                        height={24}
+                        width={24}
+                        className="shrink-0 dark:invert"
+                      />
+                      Academix
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav
+                    aria-label="Academix"
+                    className="mt-8 flex flex-col gap-1"
                   >
-                    {t.getStarted}
-                  </Link>
-                  <div className="mt-4 flex items-center gap-2">
+                    {navItems.map((item) => (
+                      <SheetClose asChild key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        >
+                          {item.label}
+                        </Link>
+                      </SheetClose>
+                    ))}
+                    <hr className="my-3" />
+                    <SheetClose asChild>
+                      <Link
+                        href={ensureLocalizedPathname("/auth", locale)}
+                        className="rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t.signIn}
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link
+                        href={ensureLocalizedPathname(
+                          "/auth?mode=register",
+                          locale
+                        )}
+                        className="rounded-md px-3 py-3 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                      >
+                        {t.getStarted}
+                      </Link>
+                    </SheetClose>
+                  </nav>
+                  <div className="mt-5 flex flex-wrap items-center gap-2 border-t pt-5">
                     <LanguageDropdown dictionary={dictionary} />
-                    <ModeDropdown dictionary={dictionary} />
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
-      </div>
       </header>
     </>
   )

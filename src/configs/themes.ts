@@ -116,15 +116,34 @@ export function generateThemeFromColor(primaryHex: string): {
   if (!primaryHex || typeof primaryHex !== "string" || !primaryHex.startsWith("#")) {
     primaryHex = "#2563eb"
   }
-  const [h] = hexToHsl(primaryHex)
+  const [h, s, l] = hexToHsl(primaryHex)
 
-  // Light mode primary is the user's chosen color
-  const lightPrimary = primaryHex
-  const lightPrimaryFg = contrastForeground(lightPrimary)
+  let lightPrimary = primaryHex
+  let lightPrimaryFg = contrastForeground(lightPrimary)
 
-  // Dark mode primary — slightly brighter version
-  const darkPrimary = hslToHex(h, 70, 55)
-  const darkPrimaryFg = contrastForeground(darkPrimary)
+  let darkPrimary = hslToHex(h, 70, 55)
+  let darkPrimaryFg = contrastForeground(darkPrimary)
+
+  // Handle monochromatic colors (white/black/grays)
+  if (s < 10 || l > 95 || l < 5) {
+    if (l > 90) {
+      // White-ish: invert for light mode so it's visible
+      lightPrimary = "#18181b"
+      lightPrimaryFg = "#fafafa"
+      darkPrimary = primaryHex
+      darkPrimaryFg = "#18181b"
+    } else if (l < 10) {
+      // Black-ish: invert for dark mode so it's visible
+      lightPrimary = primaryHex
+      lightPrimaryFg = "#fafafa"
+      darkPrimary = "#fafafa"
+      darkPrimaryFg = "#18181b"
+    } else {
+      // Grays
+      darkPrimary = primaryHex
+      darkPrimaryFg = contrastForeground(darkPrimary)
+    }
+  }
 
   return {
     light: {
@@ -136,16 +155,16 @@ export function generateThemeFromColor(primaryHex: string): {
       popoverForeground: "#09090b",
       primary: lightPrimary,
       primaryForeground: lightPrimaryFg,
-      secondary: hslToHex(h, 8, 96),
+      secondary: "#f4f4f5",
       secondaryForeground: "#18181b",
-      muted: hslToHex(h, 8, 96),
+      muted: "#f4f4f5",
       mutedForeground: "#71717a",
-      accent: hslToHex(h, 8, 96),
+      accent: "#f4f4f5",
       accentForeground: "#18181b",
       destructive: "#ef4444",
       destructiveForeground: "#fafafa",
-      border: hslToHex(h, 10, 90),
-      input: hslToHex(h, 10, 90),
+      border: "#e4e4e7",
+      input: "#e4e4e7",
       ring: lightPrimary,
     },
     dark: {
@@ -157,16 +176,16 @@ export function generateThemeFromColor(primaryHex: string): {
       popoverForeground: "#fafafa",
       primary: darkPrimary,
       primaryForeground: darkPrimaryFg,
-      secondary: hslToHex(h, 10, 16),
+      secondary: "#27272a",
       secondaryForeground: "#fafafa",
-      muted: hslToHex(h, 10, 16),
+      muted: "#27272a",
       mutedForeground: "#a1a1aa",
-      accent: hslToHex(h, 10, 16),
+      accent: "#27272a",
       accentForeground: "#fafafa",
       destructive: "#a50e0e",
       destructiveForeground: "#fafafa",
-      border: hslToHex(h, 10, 16),
-      input: hslToHex(h, 10, 16),
+      border: "#27272a",
+      input: "#27272a",
       ring: darkPrimary,
     },
   }

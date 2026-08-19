@@ -1,6 +1,7 @@
 import type { RouteType } from "@/types"
 
 export const routeMap = new Map<string, RouteType>([
+  ["/auth", { type: "guest" }],
   ["/sign-in", { type: "guest" }],
   ["/register", { type: "guest" }],
   ["/forgot-password", { type: "guest" }],

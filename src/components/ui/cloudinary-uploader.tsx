@@ -13,14 +13,14 @@ import { Check, Copy, Loader2, Upload, X } from "lucide-react"
 import type {
   CloudinaryUploadResult,
   ResourceType,
-} from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_services/cloudinary-service"
+} from "@/app/[lang]/(dashboard-layout)/account/courses/_services/cloudinary-service"
 import type { DictionaryType } from "@/lib/get-dictionary"
 import type { FileType } from "@/types"
 import type { ComponentProps } from "react"
 
 import { cn, formatBytes, formatFileSize } from "@/lib/utils"
 
-import { useCloudinaryUpload } from "@/app/[lang]/(dashboard-layout)/pages/account/courses/_hooks/use-cloudinary-upload"
+import { useCloudinaryUpload } from "@/app/[lang]/(dashboard-layout)/account/courses/_hooks/use-cloudinary-upload"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button, ButtonLoading } from "@/components/ui/button"
 import { FileDropzone } from "@/components/ui/file-dropzone"

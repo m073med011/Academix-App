@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 
 import { getDictionary } from "@/lib/get-dictionary"
 
-import { RoleSelectionForm } from "@/components/auth/role-selection-form"
+import { RoleSelectionForm } from "./role-selection-form"
 
 export const metadata: Metadata = {
   title: "Role Selection",
