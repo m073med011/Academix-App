@@ -1,29 +1,39 @@
 "use client"
 
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { useReducedMotion } from "framer-motion"
 import * as THREE from "three"
 
 interface ShaderPlaneProps {
   vertexShader: string
   fragmentShader: string
   uniforms: { [key: string]: { value: unknown } }
+  animate: boolean
 }
 
 function ShaderPlane({
   vertexShader,
   fragmentShader,
   uniforms,
+  animate,
 }: ShaderPlaneProps) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const { size } = useThree()
+  const { invalidate, size } = useThree()
+
+  useEffect(() => {
+    if (!meshRef.current) return
+
+    const material = meshRef.current.material as THREE.ShaderMaterial
+    material.uniforms.u_resolution.value.set(size.width, size.height, 1.0)
+    invalidate()
+  }, [invalidate, size.height, size.width])
 
   useFrame((state) => {
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.ShaderMaterial
-      material.uniforms.u_time.value = state.clock.elapsedTime * 0.5
-      material.uniforms.u_resolution.value.set(size.width, size.height, 1.0)
-    }
+    if (!meshRef.current || !animate) return
+
+    const material = meshRef.current.material as THREE.ShaderMaterial
+    material.uniforms.u_time.value = state.clock.elapsedTime * 0.5
   })
 
   return (
@@ -64,7 +74,7 @@ function ShaderBackground({
     uniform vec3 u_resolution;
     uniform sampler2D iChannel0;
 
-    #define STEP 256
+    #define STEP 160
     #define EPS .001
 
     float smin( float a, float b, float k )
@@ -189,6 +199,7 @@ function ShaderBackground({
   uniforms = {},
   className = "w-full h-full",
 }: ShaderBackgroundProps) {
+  const reduceMotion = useReducedMotion() ?? false
   const shaderUniforms = useMemo(
     () => ({
       u_time: { value: 0 },
@@ -199,21 +210,27 @@ function ShaderBackground({
   )
 
   return (
-    <div className={className} style={{ width: '100%', height: '100%' }}>
-      <Canvas 
+    <div
+      aria-hidden="true"
+      className={className}
+      style={{ width: "100%", height: "100%" }}
+    >
+      <Canvas
         className={className}
-        gl={{ 
-          antialias: false, // Better mobile performance
+        frameloop={reduceMotion ? "demand" : "always"}
+        gl={{
+          antialias: false,
           alpha: true,
-          powerPreference: 'high-performance'
+          powerPreference: "high-performance",
         }}
         camera={{ position: [0, 0, 1] }}
-        dpr={typeof window !== 'undefined' && window.innerWidth < 768 ? 1 : [1, 2]} // Lower pixel ratio on mobile
+        dpr={[1, 1.5]}
       >
         <ShaderPlane
           vertexShader={vertexShader}
           fragmentShader={fragmentShader}
           uniforms={shaderUniforms}
+          animate={!reduceMotion}
         />
       </Canvas>
     </div>
@@ -223,12 +240,10 @@ function ShaderBackground({
 export function ShaderBackgroundWrapper() {
   return (
     <>
-      {/* Fixed Shader Background - Responsive across all screens */}
-      <div className="fixed inset-0 z-0 w-screen h-screen overflow-hidden">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <ShaderBackground className="h-full w-full" />
       </div>
 
-      {/* Fixed Gradient Overlay */}
       <div className="pointer-events-none fixed inset-0 z-[1]" />
     </>
   )
