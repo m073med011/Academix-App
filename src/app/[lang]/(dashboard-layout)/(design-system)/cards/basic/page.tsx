@@ -15,8 +15,6 @@ export const metadata: Metadata = {
 export default function BasicCardsPage() {
   return (
     <section className="container grid gap-4 p-4 md:grid-cols-2">
-
-      
       <CardWithImage />
       <CardOverlay />
       <CardWithFilledImage />
